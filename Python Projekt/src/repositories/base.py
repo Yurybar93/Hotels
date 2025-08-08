@@ -24,11 +24,10 @@ class BaseRepository:
         add_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         result = await self.session.execute(add_stmt)
         print(add_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
-        return result.scalars.one() 
+        return result.scalars().one() 
 
-   async def edit(self, data: BaseModel, **filter_by) -> None:
-       conditions = [getattr(self.model, key) == value for key, value in filter_by.items()]
-       smt_check = select(self.model).where(*conditions)
+   async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
+       smt_check = select(self.model).filter_by(**filter_by)
        result = await self.session.execute(smt_check)
        obj = result.scalars().all()
 
@@ -36,18 +35,17 @@ class BaseRepository:
            raise HTTPException(status_code=404, detail="Object not found")
        if len(obj) > 1:
            raise HTTPException(status_code=400, detail="Multiple objects found")
+       
        edit_stmt = (
            update(self.model)
-           .where(*conditions)
-           .values(**data.model_dump())
-           .returning(self.model)
+           .filter_by(**filter_by)
+           .values(**data.model_dump(exclude_unset=exclude_unset))
        )
-       result = await self.session.execute(edit_stmt)
+       await self.session.execute(edit_stmt)
        print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
 
    async def delete(self, **filter_by) -> None:
-       conditions = [getattr(self.model, key) == value for key, value in filter_by.items()]
-       smt_check = select(self.model).where(*conditions)
+       smt_check = select(self.model).filter_by(**filter_by)
        result = await self.session.execute(smt_check)
        obj = result.scalars().all()
 
@@ -55,10 +53,7 @@ class BaseRepository:
            raise HTTPException(status_code=404, detail="Object not found")
        if len(obj) > 1:
            raise HTTPException(status_code=400, detail="Multiple objects found")
-       delete_stmt = (
-           delete(self.model)
-           .where(*conditions)
-           .returning(self.model)
-       )
-       result = await self.session.execute(delete_stmt)
+       
+       delete_stmt = delete(self.model).filter_by(**filter_by)
+       await self.session.execute(delete_stmt)
        print(delete_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))

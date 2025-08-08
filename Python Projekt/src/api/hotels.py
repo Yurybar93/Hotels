@@ -33,9 +33,8 @@ async def get_hotels(
 @router.delete("/{hotel_id}")
 async def delete_hotel(hotel_id: int):
     async with async_session() as session:
-        result = await HotelsRepository(session).delete(id=hotel_id)
+        await HotelsRepository(session).delete(id=hotel_id)
         await session.commit()
-    
     return {"status": "OK"}
 
 
@@ -55,35 +54,27 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
 })):
    
     async with async_session() as session:
-        #add_hotel_stmt = insert(HotelsOrm).values(**hotel_data.model_dump())
-        #print(add_hotel_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
-        #await session.execute(add_hotel_stmt)
         hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
-    
     return {"status": "OK", "data": hotel}
 
 
 @router.put("/{hotel_id}")
 async def update_hotel(hotel_id: int, hotel_data: Hotel):
     async with async_session() as session:
-        result = await HotelsRepository(session).edit(hotel_data, id=hotel_id)
+        await HotelsRepository(session).edit(hotel_data, id=hotel_id)
         await session.commit()
-      
-    # global hotels
-    # for hotel in hotels:
-    #     if hotel["id"] == hotel_id:
-    #         hotel["title"] = hotel_data.title
-    #         hotel["name"] = hotel_data.name
-        return {"status": "OK"}
+    return {"status": "OK"}
         
 @router.patch("/{hotel_id}")
-def patch_hotel(hotel_id: int, hotel_data: HotelPATCH):
-    global hotels
-    for hotel in hotels:
-        if hotel["id"] == hotel_id:
-            if hotel_data.title is not None:
-                hotel["title"] =hotel_data.title
-            if hotel_data.name is not None:
-                hotel["name"] = hotel_data.name
-            return {"status": "OK"}
+async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH):
+    async with async_session() as session:
+        await HotelsRepository(session).edit(hotel_data, exclude_unset=True, id=hotel_id)
+        await session.commit()
+    return {"status": "OK"}
+
+@router.get("/{hotel_id}")
+async def get_hotel(hotel_id: int):
+    async with async_session() as session:
+        return await HotelsRepository(session).get_one_or_none(id=hotel_id)
+        
