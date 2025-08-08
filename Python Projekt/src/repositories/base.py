@@ -1,4 +1,6 @@
-from sqlalchemy import insert, select
+from fastapi import HTTPException
+from pydantic import BaseModel
+from sqlalchemy import delete, insert, select, update
 from src.database import engine
 
 
@@ -18,8 +20,45 @@ class BaseRepository:
         result = await self.session.execute(query)
         return result.scalars().one_or_none()
    
-   async def add(self, obj_data):
-        add_stmt = insert(self.model).values(**obj_data.model_dump()).returning(self.model)
+   async def add(self, data: BaseModel):
+        add_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         result = await self.session.execute(add_stmt)
         print(add_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
-        return result.scalar_one()
+        return result.scalars.one() 
+
+   async def edit(self, data: BaseModel, **filter_by) -> None:
+       conditions = [getattr(self.model, key) == value for key, value in filter_by.items()]
+       smt_check = select(self.model).where(*conditions)
+       result = await self.session.execute(smt_check)
+       obj = result.scalars().all()
+
+       if not obj:
+           raise HTTPException(status_code=404, detail="Object not found")
+       if len(obj) > 1:
+           raise HTTPException(status_code=400, detail="Multiple objects found")
+       edit_stmt = (
+           update(self.model)
+           .where(*conditions)
+           .values(**data.model_dump())
+           .returning(self.model)
+       )
+       result = await self.session.execute(edit_stmt)
+       print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
+
+   async def delete(self, **filter_by) -> None:
+       conditions = [getattr(self.model, key) == value for key, value in filter_by.items()]
+       smt_check = select(self.model).where(*conditions)
+       result = await self.session.execute(smt_check)
+       obj = result.scalars().all()
+
+       if not obj:
+           raise HTTPException(status_code=404, detail="Object not found")
+       if len(obj) > 1:
+           raise HTTPException(status_code=400, detail="Multiple objects found")
+       delete_stmt = (
+           delete(self.model)
+           .where(*conditions)
+           .returning(self.model)
+       )
+       result = await self.session.execute(delete_stmt)
+       print(delete_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
