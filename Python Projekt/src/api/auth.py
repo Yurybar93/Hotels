@@ -1,17 +1,34 @@
-from fastapi import APIRouter, Body
+from datetime import datetime, timezone, timedelta
+
+from fastapi import APIRouter, Body, HTTPException, Response, Request
 
 from passlib.context import CryptContext
+import jwt
 
 from repositories.users import UsersRepository
 from schemas.hotels import HotelAdd
+from services.auth import AuthService
 from src.database import async_session
-from schemas.users import UserAdd, UserRequestAdd
+from src.config import settings
+from schemas.users import UserAdd, UserLogin, UserRequestAdd
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
 
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+@router.post("/login")
+async def login_user(
+    data: UserLogin,
+    response: Response,
+):
+    async with async_session() as session:
+        user = await UsersRepository(session).get_user_with_hashed_passwort(email=data.email)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        if not AuthService().verify_password(data.password, user.hashed_password):
+            raise HTTPException(status_code=401, detail="Incorrect password")
+        access_token = AuthService().create_access_token({"user_id": user.id})
+        response.set_cookie("access_token", access_token)
+        return {"access_token": access_token}
 
 @router.post("/register")
 async def register_user(
@@ -28,7 +45,7 @@ async def register_user(
         }
     })
 ):
-    hashed_password = pwd_context.hash(data.password)
+    hashed_password = AuthService().hash_password(data.password)
     new_user_data = UserAdd(
         first_name=data.first_name,
         last_name=data.last_name,
@@ -39,3 +56,9 @@ async def register_user(
         await UsersRepository(session).add(new_user_data)
         await session.commit()
     return {"status": "OK"}
+
+
+@router.get("/only_auth")
+async def only_auth(request: Request):
+    access_token = request.cookies.get("access_token") or None
+    return {"access_token": access_token}
