@@ -1,15 +1,9 @@
-from datetime import datetime, timezone, timedelta
+from fastapi import APIRouter, Body, HTTPException, Response
 
-from fastapi import APIRouter, Body, HTTPException, Response, Request
-
-from passlib.context import CryptContext
-import jwt
-
+from api.dependecies import UserIdDep
 from repositories.users import UsersRepository
-from schemas.hotels import HotelAdd
 from services.auth import AuthService
 from src.database import async_session
-from src.config import settings
 from schemas.users import UserAdd, UserLogin, UserRequestAdd
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
@@ -58,7 +52,13 @@ async def register_user(
     return {"status": "OK"}
 
 
-@router.get("/only_auth")
-async def only_auth(request: Request):
-    access_token = request.cookies.get("access_token") or None
-    return {"access_token": access_token}
+@router.get("/me")
+async def get_me(user_id: UserIdDep):
+    async with async_session() as session:
+        user = await UsersRepository(session).get_one_or_none(id=user_id)
+    return user
+
+@router.post("/logout")
+async def logout_user(response: Response):
+    response.delete_cookie("access_token")
+    return {"status": "OK"}
