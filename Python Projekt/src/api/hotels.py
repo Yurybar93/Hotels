@@ -64,7 +64,10 @@ async def update_hotel(hotel_id: int, hotel_data: HotelAdd):
         await session.commit()
     return {"status": "OK"}
         
-@router.patch("/{hotel_id}")
+@router.patch("/{hotel_id}", 
+              summary="Patch hotel data",
+              description="Update specific fields of a hotel record."
+)
 async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH):
     async with async_session() as session:
         await HotelsRepository(session).edit(hotel_data, exclude_unset=True, id=hotel_id)
