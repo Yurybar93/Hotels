@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from repositories.base import BaseRepository
 from schemas.rooms import Room
 from src.models.rooms import RoomsOrm

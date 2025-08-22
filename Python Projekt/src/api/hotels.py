@@ -25,6 +25,11 @@ async def get_hotels(
             limit=per_page,
             offset=(pagination.page - 1) * per_page
         )
+    
+@router.get("/{hotel_id}")
+async def get_hotel(hotel_id: int):
+    async with async_session() as session:
+        return await HotelsRepository(session).get_one_or_none(id=hotel_id)
    
 
 
@@ -74,8 +79,5 @@ async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH):
         await session.commit()
     return {"status": "OK"}
 
-@router.get("/{hotel_id}")
-async def get_hotel(hotel_id: int):
-    async with async_session() as session:
-        return await HotelsRepository(session).get_one_or_none(id=hotel_id)
+
         
