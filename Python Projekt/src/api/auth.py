@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Body, HTTPException, Response
 
-from api.dependecies import UserIdDep
-from repositories.users import UsersRepository
+from src.api.dependecies import DBDep, UserIdDep
 from services.auth import AuthService
-from src.database import async_session
 from schemas.users import UserAdd, UserLogin, UserRequestAdd
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
@@ -13,19 +11,21 @@ router = APIRouter(prefix="/auth", tags=["Авторизация и аутент
 async def login_user(
     data: UserLogin,
     response: Response,
+    db: DBDep
 ):
-    async with async_session() as session:
-        user = await UsersRepository(session).get_user_with_hashed_passwort(email=data.email)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        if not AuthService().verify_password(data.password, user.hashed_password):
-            raise HTTPException(status_code=401, detail="Incorrect password")
-        access_token = AuthService().create_access_token({"user_id": user.id})
-        response.set_cookie("access_token", access_token)
-        return {"access_token": access_token}
+    user = await db.users.get_user_with_hashed_passwort(email=data.email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not AuthService().verify_password(data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect password")
+    access_token = AuthService().create_access_token({"user_id": user.id})
+    response.set_cookie("access_token", access_token)
+    return {"access_token": access_token}
+
 
 @router.post("/register")
 async def register_user(
+    db: DBDep,
     data: UserRequestAdd = Body(openapi_examples={
         "1": {
             "summary": "User",
@@ -46,16 +46,14 @@ async def register_user(
         email=data.email,
         hashed_password=hashed_password
         )
-    async with async_session() as session:
-        await UsersRepository(session).add(new_user_data)
-        await session.commit()
+    await db.users.add(new_user_data)
+    await db.commit()
     return {"status": "OK"}
 
 
 @router.get("/me")
-async def get_me(user_id: UserIdDep):
-    async with async_session() as session:
-        user = await UsersRepository(session).get_one_or_none(id=user_id)
+async def get_me(user_id: UserIdDep, db: DBDep):
+    user = await db.users.get_one_or_none(id=user_id)
     return user
 
 @router.post("/logout")
