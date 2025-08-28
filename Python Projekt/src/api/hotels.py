@@ -20,12 +20,6 @@ async def get_hotels(
         
 ):
     per_page = pagination.per_page or 5
-    # return await db.hotels.get_all(
-    #     title=title,
-    #     location=location,
-    #     limit=per_page,
-    #     offset=(pagination.page - 1) * per_page
-    # )
     return await db.hotels.get_filtered_by_time(
         date_from = date_from,
         date_to = date_to,
@@ -39,14 +33,6 @@ async def get_hotels(
 async def get_hotel(hotel_id: int, db: DBDep):
     return await db.hotels.get_one_or_none(id=hotel_id)
    
-
-
-@router.delete("/{hotel_id}")
-async def delete_hotel(hotel_id: int, db: DBDep):
-    await db.hotels.delete(id=hotel_id)
-    await db.commit()
-    return {"status": "OK"}
-
 
 @router.post("")
 async def create_hotel(
@@ -88,6 +74,7 @@ async def update_hotel(hotel_id: int,
     await db.commit()
     return {"status": "OK"}
         
+        
 @router.patch("/{hotel_id}", 
               summary="Patch hotel data",
               description="Update specific fields of a hotel record."
@@ -101,4 +88,9 @@ async def patch_hotel(hotel_id: int,
     return {"status": "OK"}
 
 
+@router.delete("/{hotel_id}")
+async def delete_hotel(hotel_id: int, db: DBDep):
+    await db.hotels.delete(id=hotel_id)
+    await db.commit()
+    return {"status": "OK"}
         

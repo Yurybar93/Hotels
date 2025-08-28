@@ -27,16 +27,6 @@ async def get_room(
         db: DBDep
 ):
     return await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id)
-   
-
-@router.delete("/{hotel_id}/rooms/{room_id}")
-async def delete_room(hotel_id: int, 
-                      room_id: int,
-                      db: DBDep
-):
-    await db.rooms.delete(id=room_id, hotel_id=hotel_id)
-    await db.commit()
-    return {"status": "OK"}
 
 
 @router.post("/{hotel_id}/rooms")
@@ -88,4 +78,11 @@ async def patch_room(hotel_id: int,
     return {"status": "OK"}
 
 
-        
+@router.delete("/{hotel_id}/rooms/{room_id}")
+async def delete_room(hotel_id: int, 
+                      room_id: int,
+                      db: DBDep
+):
+    await db.rooms.delete(id=room_id, hotel_id=hotel_id)
+    await db.commit()
+    return {"status": "OK"}        
