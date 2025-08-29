@@ -1,4 +1,4 @@
-from fastapi import Body, HTTPException, Query
+from fastapi import Body, HTTPException
 from fastapi import APIRouter
 
 from src.api.dependecies import DBDep, UserIdDep

@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from src.models.rooms import RoomsOrm
 from src.repositories.utils import room_ids_for_booking
@@ -46,13 +46,17 @@ class HotelsRepository(BaseRepository):
             .select_from(RoomsOrm)
             .filter(RoomsOrm.id.in_(rooms_ids_get))
         )
+
+        query = select(HotelsOrm).filter(HotelsOrm.id.in_(hotels_ids_get))
         if title:
-            hotels_ids_get = hotels_ids_get.filter(HotelsOrm.title.ilike(f"%{title}%"))
+            query = query.filter(func.lower(HotelsOrm.title).contains(title.strip().lower()))
         if location:
-            hotels_ids_get = hotels_ids_get.filter(HotelsOrm.location.ilike(f"%{location}%"))
-        hotels_ids_get = (
-            hotels_ids_get.distinct()
+            query = query.filter(func.lower(HotelsOrm.location).contains(location.strip().lower()))
+        query = (
+            query
             .limit(limit)
             .offset(offset)
         )
-        return await self.get_filtered(HotelsOrm.id.in_(hotels_ids_get))
+        result = await self.session.execute(query)
+        print(query.compile(compile_kwargs={"literal_binds": True}))
+        return [Hotel.model_validate(hotel, from_attributes=True) for hotel in result.scalars().all()]
