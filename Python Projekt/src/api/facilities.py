@@ -1,4 +1,4 @@
-from fastapi import Body, HTTPException, Query
+from fastapi import Body
 from fastapi import APIRouter
 
 from src.api.dependecies import DBDep
@@ -14,11 +14,7 @@ async def get_facilities(db: DBDep):
 
 
 @router.post("")
-async def creat_facility(
-    db: DBDep,
-    facility_data: FacilityAdd = Body()
-    
-):
+async def creat_facility(db: DBDep, facility_data: FacilityAdd = Body()):
     facility = await db.facilities.add(facility_data)
     await db.commit()
     return {"status": "OK", "data": facility}

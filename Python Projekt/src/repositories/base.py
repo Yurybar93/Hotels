@@ -39,7 +39,11 @@ class BaseRepository:
         print(add_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
         model = model.scalars().one()
         return self.schema.model_validate(model, from_attributes=True)
-
+   
+   async def add_bulk(self, data: list[BaseModel]):
+        add_stmt = insert(self.model).values([item.model_dump() for item in data])
+        await self.session.execute(add_stmt)
+    
    async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
        smt_check = select(self.model).filter_by(**filter_by)
        result = await self.session.execute(smt_check)
@@ -57,6 +61,24 @@ class BaseRepository:
        )
        await self.session.execute(edit_stmt)
        print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
+
+   async def edit_bulk(self, data: list[BaseModel], exclude_unset: bool = False, **filter_by) -> None: #----
+        # smt_check = select(self.model).filter_by(**filter_by)
+        # result = await self.session.execute(smt_check)
+        # # obj = result.scalars().all()
+
+        # # if not obj:
+        # #     raise HTTPException(status_code=404, detail="Object not found")
+        # # if len(obj) > 1:
+        #     raise HTTPException(status_code=400, detail="Multiple objects found")
+        
+        edit_stmt = (
+            update(self.model)
+            .filter_by(**filter_by)
+            .values([item.model_dump() for item in data])
+        )
+        await self.session.execute(edit_stmt)
+        #print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
 
    async def delete(self, **filter_by) -> None:
        smt_check = select(self.model).filter_by(**filter_by)
