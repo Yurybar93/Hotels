@@ -1,6 +1,9 @@
 from datetime import date
+
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload, joinedload
 from src.repositories.base import BaseRepository
-from src.schemas.rooms import Room
+from src.schemas.rooms import Room, RoomWithRls
 from src.models.rooms import RoomsOrm
 
 from src.repositories.utils import room_ids_for_booking
@@ -18,5 +21,22 @@ class RoomsRepository(BaseRepository):
             hotel_id: int
     ):  
         room_ids_get = room_ids_for_booking(date_from, date_to, hotel_id)
-        #print(room_ids_get.compile(bind=engine, compile_kwargs={"literal_binds": True}))
-        return await self.get_filtered(RoomsOrm.id.in_(room_ids_get))
+        
+        query = (
+           select(self.model)
+           .options(joinedload(self.model.facilities))
+           .filter(RoomsOrm.id.in_(room_ids_get))
+       )
+        result = await self.session.execute(query)
+        print(query.compile(compile_kwargs={"literal_binds": True}))
+        return [RoomWithRls.model_validate(model, from_attributes=True) for model in result.unique().scalars().all()]
+    
+    async def get_filtered_with_facilities(self, **filter_by):
+        query = (
+           select(self.model)
+           .options(selectinload(self.model.facilities))
+           .filter_by(**filter_by)
+       )
+        result = await self.session.execute(query)
+        print(query.compile(compile_kwargs={"literal_binds": True}))
+        return [RoomWithRls.model_validate(model, from_attributes=True) for model in result.unique().scalars().all()]
