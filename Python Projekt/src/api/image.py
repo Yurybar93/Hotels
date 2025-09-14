@@ -13,3 +13,4 @@ def uploade_image(file: UploadFile):
         shutil.copyfileobj(file.file, new_file)
 
     resize_image.delay(image_path)
+ 
