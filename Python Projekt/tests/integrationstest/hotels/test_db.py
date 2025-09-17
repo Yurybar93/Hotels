@@ -5,8 +5,7 @@ from src.utils.db_manager import DBManager
 from src.database import async_session_maker_null_pool
 
 
-async def test_add_hotel():
+async def test_add_hotel(db):
     hotel_data = HotelAdd(title="Test Hotel", location="Test Location", description="Test Description")
-    async with DBManager(session_factory = async_session_maker_null_pool) as db:
-        await db.hotels.add(hotel_data)
-        await db.commit()
+    await db.hotels.add(hotel_data)
+    await db.commit()
