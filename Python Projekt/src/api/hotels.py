@@ -22,7 +22,6 @@ async def get_hotels(
         
 ):
     per_page = pagination.per_page or 5
-    print(f"иду в бд")
     return await db.hotels.get_filtered_by_time(
         date_from = date_from,
         date_to = date_to,
