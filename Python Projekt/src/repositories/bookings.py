@@ -1,8 +1,11 @@
 from datetime import date
 from sqlalchemy import select
+
+from repositories.utils import room_ids_for_booking
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import BookingDataMapper
 from src.models.bookings import BookingsOrm
+from src.models.rooms import RoomsOrm
 
 class BookingsRepository(BaseRepository):
     model = BookingsOrm
@@ -15,3 +18,17 @@ class BookingsRepository(BaseRepository):
         )
         res = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(booking) for booking in res.scalars().all()]
+
+
+    async def add_booking(self, data, hotel_id):
+        room_ids_get = room_ids_for_booking(data.date_from, data.date_to, hotel_id)
+        room_ids_get_res = await self.session.execute(room_ids_get)
+        room_ids_to_book: list[int] = room_ids_get_res.scalars().all()
+
+        if data.room_id not in room_ids_to_book:
+            raise Exception("Room is not available for the selected dates")
+        else:
+            booking = await self.add(data)
+            return booking
+        
+        

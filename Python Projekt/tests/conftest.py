@@ -81,8 +81,8 @@ async def register_test_user(ac, setup_database):
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
-async def login_test_user(ac, register_test_user) -> AsyncIterator[AsyncClient]:
+@pytest.fixture(scope="session")
+async def autheticated_ac(ac, register_test_user) -> AsyncIterator[AsyncClient]:
     await ac.post(
         "/auth/login",
         json={
@@ -91,6 +91,5 @@ async def login_test_user(ac, register_test_user) -> AsyncIterator[AsyncClient]:
         }
     )
     assert ac.cookies.get("access_token") is not None
-    print("Я проверил!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     yield ac
 
