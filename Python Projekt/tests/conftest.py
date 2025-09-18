@@ -2,6 +2,7 @@ import json
 import pytest
 from typing import AsyncIterator
 
+from src.api.dependecies import get_db
 from src.schemas.hotels import HotelAdd
 from src.schemas.rooms import RoomAdd
 from src.database import Base, engine_null_pool, async_session_maker_null_pool
@@ -25,12 +26,18 @@ async def setup_database(check_database):
         await conn.run_sync(Base.metadata.create_all)
 
 
-
-@pytest.fixture()
-async def db() -> AsyncIterator[DBManager]:
+async def null_pull_db():
     async with DBManager(session_factory = async_session_maker_null_pool) as db:
         yield db
 
+
+@pytest.fixture()
+async def db() -> AsyncIterator[DBManager]:
+    async for db in null_pull_db():
+        yield db
+
+
+app.dependency_overrides[get_db] = null_pull_db
 
 @pytest.fixture(scope="session", autouse=True)
 async def add_data(setup_database):

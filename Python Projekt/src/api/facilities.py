@@ -14,7 +14,7 @@ router = APIRouter(prefix="/facilities", tags=["Facilities"])
 
 
 @router.get("")
-@cache(expire=100)
+#@cache(expire=100)
 async def get_facilities(db: DBDep):
     return await db.facilities.get_all()
 
@@ -23,6 +23,6 @@ async def get_facilities(db: DBDep):
 async def creat_facility(db: DBDep, facility_data: FacilityAdd = Body()):
     facility = await db.facilities.add(facility_data)
 
-    test_task.delay()
+    #test_task.delay()
     await db.commit()
     return {"status": "OK", "data": facility}
