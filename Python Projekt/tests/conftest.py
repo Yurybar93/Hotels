@@ -1,4 +1,9 @@
 import json
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda x: x).start()
+mock.patch("src.tasks.tasks.test_task.delay", lambda *a, **kw: None).start()
+
 import pytest
 from typing import AsyncIterator
 
@@ -75,4 +80,17 @@ async def register_test_user(ac, setup_database):
         }
     )
 
+
+@pytest.fixture(scope="session", autouse=True)
+async def login_test_user(ac, register_test_user) -> AsyncIterator[AsyncClient]:
+    await ac.post(
+        "/auth/login",
+        json={
+            "email": "muster@muster.com",
+            "password": "1234"
+        }
+    )
+    assert ac.cookies.get("access_token") is not None
+    print("Я проверил!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    yield ac
 
