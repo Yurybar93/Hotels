@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, HTTPException, Response
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.api.dependecies import DBDep, UserIdDep
 from services.auth import AuthService
@@ -13,11 +14,13 @@ async def login_user(
     response: Response,
     db: DBDep
 ):
-    user = await db.users.get_user_with_hashed_passwort(email=data.email)
-    if not user:
+    try:
+        user = await db.users.get_user_with_hashed_passwort(email=data.email)
+    except NoResultFound:
         raise HTTPException(status_code=404, detail="User not found")
     if not AuthService().verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect password")
+    
     access_token = AuthService().create_access_token({"user_id": user.id})
     response.set_cookie("access_token", access_token)
     return {"access_token": access_token}
@@ -46,9 +49,13 @@ async def register_user(
         email=data.email,
         hashed_password=hashed_password
         )
-    await db.users.add(new_user_data)
-    await db.commit()
-    return {"status": "OK"}
+    try:
+        await db.users.add(new_user_data)
+        await db.commit()
+        return {"status": "OK"}
+    except IntegrityError as e:
+        if getattr(getattr(e, "orig", None), "sqlstate", None) == "23505":
+            raise HTTPException(status_code=409, detail="Email already registered")
 
 
 @router.get("/me")
