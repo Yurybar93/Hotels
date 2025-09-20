@@ -1,4 +1,5 @@
 from datetime import date
+from fastapi import HTTPException
 from sqlalchemy import select
 
 from repositories.utils import room_ids_for_booking
@@ -26,7 +27,7 @@ class BookingsRepository(BaseRepository):
         room_ids_to_book: list[int] = room_ids_get_res.scalars().all()
 
         if data.room_id not in room_ids_to_book:
-            raise Exception("Room is not available for the selected dates")
+            raise HTTPException(500)
         else:
             booking = await self.add(data)
             return booking

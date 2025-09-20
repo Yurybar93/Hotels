@@ -71,8 +71,6 @@ class BaseRepository:
 
        if not obj:
            raise HTTPException(status_code=404, detail="Object not found")
-       if len(obj) > 1:
-           raise HTTPException(status_code=400, detail="Multiple objects found")
        
        delete_stmt = delete(self.model).filter_by(**filter_by)
        await self.session.execute(delete_stmt)
