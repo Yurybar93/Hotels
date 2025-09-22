@@ -11,9 +11,6 @@ from src.schemas.hotels import Hotel
 from src.models.hotels import HotelsOrm
 
 
-
-
-
 class HotelDataMapper(DataMapper):
     model = HotelsOrm
     schema = Hotel

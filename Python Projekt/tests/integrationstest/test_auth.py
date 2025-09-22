@@ -11,4 +11,3 @@ def test_create_and_decode_token():
     payload = AuthService().decode_token(jwt_token)
     assert payload
     assert payload["user_id"] == data["user_id"]
-

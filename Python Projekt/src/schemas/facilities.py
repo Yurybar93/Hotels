@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class FacilityAdd(BaseModel):
     title: str
 
@@ -15,6 +16,3 @@ class RoomFacilityAdd(BaseModel):
 
 class RoomFacility(RoomFacilityAdd):
     id: int
-
-
-   

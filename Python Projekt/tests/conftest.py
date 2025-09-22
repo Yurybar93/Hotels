@@ -14,11 +14,9 @@ from src.schemas.hotels import HotelAdd
 from src.schemas.rooms import RoomAdd
 from src.database import Base, engine_null_pool, async_session_maker_null_pool
 from src.config import settings
-from src.models import * # noqa
+from src.models import *  # noqa
 from src.main import app
 from src.utils.db_manager import DBManager
-
-
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -34,7 +32,7 @@ async def setup_database(check_database):
 
 
 async def null_pull_db():
-    async with DBManager(session_factory = async_session_maker_null_pool) as db:
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
 
 
@@ -46,6 +44,7 @@ async def db() -> AsyncIterator[DBManager]:
 
 app.dependency_overrides[get_db] = null_pull_db
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def add_data(setup_database):
     with open("tests/mock_hotels.json", encoding="utf-8") as f_hotels:
@@ -53,11 +52,11 @@ async def add_data(setup_database):
 
     with open("tests/mock_rooms.json", encoding="utf-8") as f_rooms:
         rooms = json.load(f_rooms)
-    
+
     hotels = [HotelAdd.model_validate(h) for h in hotels]
     rooms = [RoomAdd.model_validate(h) for h in rooms]
 
-    async with DBManager(session_factory = async_session_maker_null_pool) as db_:
+    async with DBManager(session_factory=async_session_maker_null_pool) as db_:
         await db_.hotels.add_bulk(hotels)
         await db_.rooms.add_bulk(rooms)
         await db_.commit()
@@ -65,11 +64,11 @@ async def add_data(setup_database):
 
 @pytest.fixture(scope="session")
 async def ac() -> AsyncIterator[AsyncClient]:
-    transport=ASGITransport(app=app)
-    async with AsyncClient(transport=transport,base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
-    
+
 @pytest.fixture(scope="session", autouse=True)
 async def register_test_user(ac, setup_database):
     await ac.post(
@@ -78,20 +77,13 @@ async def register_test_user(ac, setup_database):
             "first_name": "Max",
             "last_name": "Muster",
             "email": "muster@muster.com",
-            "password": "1234"
-        }
+            "password": "1234",
+        },
     )
 
 
 @pytest.fixture(scope="session")
 async def autheticated_ac(ac, register_test_user) -> AsyncIterator[AsyncClient]:
-    await ac.post(
-        "/auth/login",
-        json={
-            "email": "muster@muster.com",
-            "password": "1234"
-        }
-    )
+    await ac.post("/auth/login", json={"email": "muster@muster.com", "password": "1234"})
     assert ac.cookies.get("access_token") is not None
     yield ac
-

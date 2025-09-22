@@ -1,17 +1,15 @@
 import pytest
 
 
-
-
-
 @pytest.mark.parametrize(
-    "first_name, last_name, email, password, status_code", [
-        ("Testname", "Testlastname", "test@testmail.com", "12345678", 200),  
-        ("Testname2", "Testlastname2", "test2@testmail.com", "12345678", 200), 
-        ("Testname3", "Testlastname3", "test3@testmail.com", "12345678", 200), 
+    "first_name, last_name, email, password, status_code",
+    [
+        ("Testname", "Testlastname", "test@testmail.com", "12345678", 200),
+        ("Testname2", "Testlastname2", "test2@testmail.com", "12345678", 200),
+        ("Testname3", "Testlastname3", "test3@testmail.com", "12345678", 200),
         ("Testname", "Testlastname", "test@testmail.com", "12345678", 400),
-        ("Testname", "Testlastname", "test@testmail", "12345678", 422),    
-    ]
+        ("Testname", "Testlastname", "test@testmail", "12345678", 422),
+    ],
 )
 async def test_register_user(ac, first_name, last_name, email, password, status_code):
     response = await ac.post(
@@ -20,8 +18,8 @@ async def test_register_user(ac, first_name, last_name, email, password, status_
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
-            "password": password
-        }
+            "password": password,
+        },
     )
     assert response.status_code == status_code
     if status_code == 200:
@@ -31,22 +29,17 @@ async def test_register_user(ac, first_name, last_name, email, password, status_
 
 
 @pytest.mark.parametrize(
-     "first_name, last_name, email, password, status_code", [
-        ("Testname", "Testlastname", "test@testmail.com", "12345678", 200),  
-        ("Testname2", "Testlastname2", "test2@testmail.com", "12345678", 200), 
-        ("Testname3", "Testlastname3", "test3@testmail.com", "12345678", 200), 
-        ("Testname", "Testlastname", "test@testmail.com", "123456789", 401), 
-        ("Testname", "Testlastname", "testfalse@testmail.com", "12345678", 404), 
-    ] 
+    "first_name, last_name, email, password, status_code",
+    [
+        ("Testname", "Testlastname", "test@testmail.com", "12345678", 200),
+        ("Testname2", "Testlastname2", "test2@testmail.com", "12345678", 200),
+        ("Testname3", "Testlastname3", "test3@testmail.com", "12345678", 200),
+        ("Testname", "Testlastname", "test@testmail.com", "123456789", 401),
+        ("Testname", "Testlastname", "testfalse@testmail.com", "12345678", 404),
+    ],
 )
 async def test_login_me_logout_user(ac, first_name, last_name, email, password, status_code):
-    log_response = await ac.post(
-        "/auth/login",
-        json={
-            "email": email,
-            "password": password
-        }
-    )
+    log_response = await ac.post("/auth/login", json={"email": email, "password": password})
     assert log_response.status_code == status_code
     if status_code != 200:
         return
@@ -73,9 +66,3 @@ async def test_login_me_logout_user(ac, first_name, last_name, email, password, 
     assert isinstance(res, dict)
     assert res["status"] == "OK"
     assert ac.cookies.get("access_token") is None
-
-            
-
-
-
-    

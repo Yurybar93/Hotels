@@ -4,6 +4,7 @@ from src.repositories.base import BaseRepository
 from src.schemas.facilities import RoomFacility
 from src.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
 
+
 class FasilitiesRepository(BaseRepository):
     model = FacilitiesOrm
     mapper = FacilitiesDataMapper
@@ -14,10 +15,7 @@ class RoomsFacilitiesRepository(BaseRepository):
     schema = RoomFacility
 
     async def set_room_facilities(self, room_id: int, facility_ids: list[int]):
-        get_current_facilities_ids = (
-            select(self.model.facility_id)
-            .filter_by(room_id=room_id)
-        )
+        get_current_facilities_ids = select(self.model.facility_id).filter_by(room_id=room_id)
         res = await self.session.execute(get_current_facilities_ids)
         curr_facilities_ids = res.scalars().all()
 
@@ -33,9 +31,7 @@ class RoomsFacilitiesRepository(BaseRepository):
             await self.session.execute(delete_stmt)
 
         if get_ids_to_add:
-            add_stmt = (
-            insert(self.model)
-            .values([{"room_id": room_id, "facility_id": facility_id} for facility_id in get_ids_to_add])
+            add_stmt = insert(self.model).values(
+                [{"room_id": room_id, "facility_id": facility_id} for facility_id in get_ids_to_add]
             )
             await self.session.execute(add_stmt)
-    

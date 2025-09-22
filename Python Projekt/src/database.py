@@ -13,4 +13,3 @@ async_session_maker_null_pool = async_sessionmaker(bind=engine_null_pool, expire
 
 class Base(DeclarativeBase):
     pass
-

@@ -6,6 +6,7 @@ from src.tasks.tasks import resize_image
 
 router = APIRouter(prefix="/images", tags=["Images"])
 
+
 @router.post("")
 def uploade_image(file: UploadFile):
     image_path = f"src/static/images/{file.filename}"
@@ -13,4 +14,3 @@ def uploade_image(file: UploadFile):
         shutil.copyfileobj(file.file, new_file)
 
     resize_image.delay(image_path)
- 
