@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body, HTTPException, Response
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import  NoResultFound
 
 from src.api.dependecies import DBDep, UserIdDep
 from services.auth import AuthService

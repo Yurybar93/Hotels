@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 import json
 from unittest import mock
 
@@ -6,17 +7,18 @@ mock.patch("src.tasks.tasks.test_task.delay", lambda *a, **kw: None).start()
 
 import pytest
 from typing import AsyncIterator
+from httpx import ASGITransport, AsyncClient
 
 from src.api.dependecies import get_db
 from src.schemas.hotels import HotelAdd
 from src.schemas.rooms import RoomAdd
 from src.database import Base, engine_null_pool, async_session_maker_null_pool
 from src.config import settings
-from src.models import *
+from src.models import * # noqa
 from src.main import app
 from src.utils.db_manager import DBManager
 
-from httpx import ASGITransport, AsyncClient
+
 
 
 @pytest.fixture(scope="session", autouse=True)

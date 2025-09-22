@@ -1,4 +1,3 @@
-from datetime import date
 from sqlalchemy import func, select
 
 from src.repositories.mappers.mappers import HotelDataMapper

@@ -1,8 +1,6 @@
 import pytest
-from sqlalchemy import delete
 
-from database import engine_null_pool
-from src.models.bookings import BookingsOrm
+
 from tests.conftest import null_pull_db
 
 
@@ -18,7 +16,6 @@ from tests.conftest import null_pull_db
     ]
 )
 async def test_add_booking(autheticated_ac, db, date_from, date_to, room_id, status_code):
-    #room_id = (await db.rooms.get_all())[0].id
     response = await autheticated_ac.post(
         "/bookings",
         json={

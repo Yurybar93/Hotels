@@ -1,4 +1,3 @@
-from datetime import timedelta
 from celery import Celery
 
 from src.config import settings
