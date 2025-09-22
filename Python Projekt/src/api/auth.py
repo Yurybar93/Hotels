@@ -53,9 +53,8 @@ async def register_user(
         await db.users.add(new_user_data)
         await db.commit()
         return {"status": "OK"}
-    except IntegrityError as e:
-        if getattr(getattr(e, "orig", None), "sqlstate", None) == "23505":
-            raise HTTPException(status_code=409, detail="Email already registered")
+    except Exception:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
 
 
 @router.get("/me")
