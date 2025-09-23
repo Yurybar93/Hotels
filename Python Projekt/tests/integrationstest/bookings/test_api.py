@@ -12,7 +12,7 @@ from tests.conftest import null_pull_db
         ("2024-07-01", "2024-07-10", 1, 200),
         ("2024-07-01", "2024-07-10", 1, 200),
         ("2024-07-01", "2024-07-10", 1, 200),
-        ("2024-07-01", "2024-07-10", 1, 500),
+        ("2024-07-01", "2024-07-10", 1, 409),
     ],
 )
 async def test_add_booking(autheticated_ac, db, date_from, date_to, room_id, status_code):

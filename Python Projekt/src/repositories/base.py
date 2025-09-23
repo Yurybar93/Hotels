@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
+from sqlalchemy.exc import NoResultFound, DBAPIError, IntegrityError
+from src.exceptions import ObjectNotFoundException, UncorrectDataException, DataBaseException 
 from src.repositories.mappers.base import DataMapper
 from src.database import engine
 
@@ -26,14 +28,30 @@ class BaseRepository:
         result = await self.session.execute(query)
         model = result.scalars().one_or_none()
         if model is None:
-            return None
+            raise ObjectNotFoundException
         return self.mapper.map_to_domain_entity(model)
-
+    
+    async def get_one(self, **filter_by):
+        query = select(self.model).filter_by(**filter_by)
+        try:
+            result = await self.session.execute(query)
+            model = result.scalars().one()
+        except NoResultFound:
+            raise ObjectNotFoundException
+        except DBAPIError:
+            raise UncorrectDataException
+        return self.mapper.map_to_domain_entity(model)
+    
     async def add(self, data: BaseModel):
         add_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        model = await self.session.execute(add_stmt)
-        print(add_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
-        model = model.scalars().one()
+        try:
+            model = await self.session.execute(add_stmt)
+            print(add_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
+            model = model.scalars().one()
+        except IntegrityError:
+            raise DataBaseException 
+        except DBAPIError:
+            raise UncorrectDataException
         return self.mapper.map_to_domain_entity(model)
 
     async def add_bulk(self, data: list[BaseModel]):
@@ -41,31 +59,42 @@ class BaseRepository:
         await self.session.execute(add_stmt)
 
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
-        smt_check = select(self.model).filter_by(**filter_by)
-        result = await self.session.execute(smt_check)
-        obj = result.scalars().all()
-
-        if not obj:
-            raise HTTPException(status_code=404, detail="Object not found")
-        if len(obj) > 1:
-            raise HTTPException(status_code=400, detail="Multiple objects found")
-
-        edit_stmt = (
+        
+        try:
+            smt_check = select(self.model).filter_by(**filter_by)
+            result = await self.session.execute(smt_check)
+            obj = result.scalars().all()
+            if not obj:
+                raise ObjectNotFoundException
+            
+            edit_stmt = (
             update(self.model)
             .filter_by(**filter_by)
             .values(**data.model_dump(exclude_unset=exclude_unset))
         )
-        await self.session.execute(edit_stmt)
+            await self.session.execute(edit_stmt)
+
+        except IntegrityError:
+            raise DataBaseException 
+        except DBAPIError:
+            raise UncorrectDataException
+
+        
         print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
 
     async def delete(self, **filter_by) -> None:
-        smt_check = select(self.model).filter_by(**filter_by)
-        result = await self.session.execute(smt_check)
-        obj = result.scalars().all()
+        try:
+            smt_check = select(self.model).filter_by(**filter_by)
+            result = await self.session.execute(smt_check)
+            obj = result.scalars().all()
 
-        if not obj:
-            raise HTTPException(status_code=404, detail="Object not found")
+            if not obj:
+                raise ObjectNotFoundException
+            delete_stmt = delete(self.model).filter_by(**filter_by)
+            await self.session.execute(delete_stmt)
 
-        delete_stmt = delete(self.model).filter_by(**filter_by)
-        await self.session.execute(delete_stmt)
+        except IntegrityError:
+            raise DataBaseException 
+        except DBAPIError:
+            raise UncorrectDataException
         print(delete_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))

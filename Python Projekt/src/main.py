@@ -37,6 +37,23 @@ app.include_router(bookings_router)
 app.include_router(facilities_router)
 app.include_router(image_router)
 
+# from fastapi.openapi.docs import get_swagger_ui_html
+# from fastapi.middleware.cors import CORSMiddleware
+# @app.get("/docs", include_in_schema=False)
+# async def custom_swagger_ui_html():
+#     return get_swagger_ui_html(
+#         openapi_url=app.openapi_url,  # type: ignore
+#         title=app.title + " - Swagger UI",  # type: ignore
+#         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,  # type: ignore
+#         swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
+#         swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css",
+#     )
+
+# app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000"])
+
+# if __name__ == "__main__":
+#     uvicorn.run("main:app", host="0.0.0.0", reload=True)
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
