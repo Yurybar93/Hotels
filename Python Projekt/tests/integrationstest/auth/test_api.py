@@ -7,7 +7,7 @@ import pytest
         ("Testname", "Testlastname", "test@testmail.com", "12345678", 200),
         ("Testname2", "Testlastname2", "test2@testmail.com", "12345678", 200),
         ("Testname3", "Testlastname3", "test3@testmail.com", "12345678", 200),
-        ("Testname", "Testlastname", "test@testmail.com", "12345678", 400),
+        ("Testname", "Testlastname", "test@testmail.com", "12345678", 409),
         ("Testname", "Testlastname", "test@testmail", "12345678", 422),
     ],
 )

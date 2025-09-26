@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload, joinedload
-from src.exceptions import DateFromBiggerThanDateToException, ObjectNotFoundException
+from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.mappers import RoomDataMapper
 
 from src.repositories.base import BaseRepository
@@ -17,8 +17,6 @@ class RoomsRepository(BaseRepository):
     mapper = RoomDataMapper
 
     async def get_filtered_by_time(self, date_from: date, date_to: date, hotel_id: int):
-        if date_from >= date_to:
-            raise DateFromBiggerThanDateToException
         room_ids_get = room_ids_for_booking(date_from, date_to, hotel_id)
 
         query = (

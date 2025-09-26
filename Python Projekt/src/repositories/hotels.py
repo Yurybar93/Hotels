@@ -1,6 +1,5 @@
 from sqlalchemy import func, select
 
-from src.exceptions import DateFromBiggerThanDateToException
 from src.repositories.mappers.mappers import HotelDataMapper
 from src.models.rooms import RoomsOrm
 from src.repositories.utils import room_ids_for_booking
@@ -28,8 +27,6 @@ class HotelsRepository(BaseRepository):
         ]
 
     async def get_filtered_by_time(self, date_from, date_to, title, location, limit, offset):
-        if date_from >= date_to:
-            raise DateFromBiggerThanDateToException
         rooms_ids_get = room_ids_for_booking(date_from=date_from, date_to=date_to)
         hotels_ids_get = (
             select(RoomsOrm.hotel_id).select_from(RoomsOrm).filter(RoomsOrm.id.in_(rooms_ids_get))

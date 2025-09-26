@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, HTTPException, Response
 from sqlalchemy.exc import NoResultFound
 
-from src.exceptions import DataBaseException 
+from src.exceptions import ObjectAlreadyExistsException
 from src.api.dependecies import DBDep, UserIdDep
 from services.auth import AuthService
 from schemas.users import UserAdd, UserLogin, UserRequestAdd
@@ -52,8 +52,8 @@ async def register_user(
         await db.users.add(new_user_data)
         await db.commit()
         return {"status": "OK"}
-    except DataBaseException:
-            raise HTTPException(status_code=400, detail="User with this email already exists")
+    except ObjectAlreadyExistsException:
+            raise HTTPException(status_code=409, detail="User with this email already exists")
 
 
 @router.get("/me")

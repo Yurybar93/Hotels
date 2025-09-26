@@ -1,8 +1,11 @@
-from fastapi import HTTPException
+import logging
+from asyncpg import ForeignKeyViolationError
 from pydantic import BaseModel
+
+from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import NoResultFound, DBAPIError, IntegrityError
-from src.exceptions import ObjectNotFoundException, UncorrectDataException, DataBaseException 
+from src.exceptions import ForeinKeyViolationException, ObjectNotFoundException, UncorrectDataException, ObjectAlreadyExistsException
 from src.repositories.mappers.base import DataMapper
 from src.database import engine
 
@@ -28,7 +31,7 @@ class BaseRepository:
         result = await self.session.execute(query)
         model = result.scalars().one_or_none()
         if model is None:
-            raise ObjectNotFoundException
+            return None
         return self.mapper.map_to_domain_entity(model)
     
     async def get_one(self, **filter_by):
@@ -48,8 +51,12 @@ class BaseRepository:
             model = await self.session.execute(add_stmt)
             print(add_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
             model = model.scalars().one()
-        except IntegrityError:
-            raise DataBaseException 
+        except IntegrityError as ex:
+            logging.error(f"Unable to add data: {data}. Type error: {type(ex.orig.__cause__)=}")
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistsException from ex
+            logging.error(f"Unknown error: {type(ex.orig.__cause__)=}")
+            raise ex
         except DBAPIError:
             raise UncorrectDataException
         return self.mapper.map_to_domain_entity(model)
@@ -74,8 +81,10 @@ class BaseRepository:
         )
             await self.session.execute(edit_stmt)
 
-        except IntegrityError:
-            raise DataBaseException 
+        except IntegrityError as ex:
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistsException from ex
+            raise ex
         except DBAPIError:
             raise UncorrectDataException
 
@@ -93,8 +102,12 @@ class BaseRepository:
             delete_stmt = delete(self.model).filter_by(**filter_by)
             await self.session.execute(delete_stmt)
 
-        except IntegrityError:
-            raise DataBaseException 
+        except IntegrityError as ex:
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistsException from ex
+            if isinstance(ex.orig.__cause__, ForeignKeyViolationError):
+                raise ForeinKeyViolationException 
+            raise ex
         except DBAPIError:
             raise UncorrectDataException
         print(delete_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))

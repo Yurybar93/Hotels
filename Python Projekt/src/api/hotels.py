@@ -2,9 +2,10 @@ from datetime import date
 from fastapi import HTTPException, Query, APIRouter, Body
 from fastapi_cache.decorator import cache
 
-from src.exceptions import DateFromBiggerThanDateToException, ObjectNotFoundException, UncorrectDataException
+from src.exceptions import ForeinKeyViolationException, HotelNotFoundException, ObjectNotFoundException, UncorrectDataException, UncorrectHotelIDException, ForeignKeyViolationErrorHTTPException
 from src.schemas.hotels import HotelAdd, HotelPATCH
 from src.api.dependecies import DBDep, PaginationDep
+from src.services.hotels import HotelService 
 
 
 router = APIRouter(prefix="/hotels", tags=["hotels"])
@@ -20,26 +21,21 @@ async def get_hotels(
     date_from: date = Query(example="2025-08-30"),
     date_to: date = Query(example="2025-07-01"),
 ):
-    per_page = pagination.per_page or 5
-    try:
-        return await db.hotels.get_filtered_by_time(
-            date_from=date_from,
-            date_to=date_to,
-            title=title,
-            location=location,
-            limit=per_page,
-            offset=(pagination.page - 1) * per_page,
-        )
-    except DateFromBiggerThanDateToException as ex:
-        raise HTTPException(status_code=400, detail=ex.detail)
+    return await HotelService(db).get_hotels(
+        pagination,
+        title,
+        location,
+        date_from,
+        date_to,
+    )
 
 
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int, db: DBDep):
     try:
-        return await db.hotels.get_one(id=hotel_id)
+        return HotelService(db).get_hotel(hotel_id)
     except ObjectNotFoundException:
-        raise HTTPException(status_code=404, detail="Hotel not found")
+        raise HotelNotFoundException
     except UncorrectDataException as ex:
         raise HTTPException(status_code=400, detail=ex.detail)
 
@@ -68,16 +64,17 @@ async def create_hotel(
         }
     ),
 ):
-    hotel = await db.hotels.add(hotel_data)
-    await db.commit()
+    hotel = await HotelService(db).create_hotel(hotel_data)
     return {"status": "OK", "data": hotel}
 
 
 @router.put("/{hotel_id}")
 async def update_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBDep):
-    await db.hotels.edit(hotel_data, id=hotel_id)
-    await db.commit()
-    return {"status": "OK"}
+    try:
+        await HotelService(db).update_hotel(hotel_id, hotel_data)
+        return {"status": "OK"}
+    except ObjectNotFoundException:
+        raise HotelNotFoundException
 
 
 @router.patch(
@@ -86,13 +83,23 @@ async def update_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBDep):
     description="Update specific fields of a hotel record.",
 )
 async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
-    await db.hotels.edit(hotel_data, exclude_unset=True, id=hotel_id)
-    await db.commit()
-    return {"status": "OK"}
-
+    try:
+        await HotelService(db).patch_hotel(hotel_id, hotel_data)
+        return {"status": "OK"}
+    except ObjectNotFoundException:
+        raise HotelNotFoundException
+    except UncorrectDataException as ex:
+        raise UncorrectHotelIDException
+    
 
 @router.delete("/{hotel_id}")
 async def delete_hotel(hotel_id: int, db: DBDep):
-    await db.hotels.delete(id=hotel_id)
-    await db.commit()
-    return {"status": "OK"}
+    try:
+        await HotelService(db).delete_hotel(hotel_id)
+        return {"status": "OK"}
+    except ObjectNotFoundException:
+        raise HotelNotFoundException
+    except UncorrectDataException:
+        raise UncorrectHotelIDException
+    except ForeinKeyViolationException:
+        raise ForeignKeyViolationErrorHTTPException
