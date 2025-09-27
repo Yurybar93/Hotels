@@ -5,7 +5,12 @@ from pydantic import BaseModel
 from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import NoResultFound, DBAPIError, IntegrityError
-from src.exceptions import ForeinKeyViolationException, ObjectNotFoundException, UncorrectDataException, ObjectAlreadyExistsException
+from src.exceptions import (
+    ForeinKeyViolationException,
+    ObjectNotFoundException,
+    UncorrectDataException,
+    ObjectAlreadyExistsException,
+)
 from src.repositories.mappers.base import DataMapper
 from src.database import engine
 
@@ -33,7 +38,7 @@ class BaseRepository:
         if model is None:
             return None
         return self.mapper.map_to_domain_entity(model)
-    
+
     async def get_one(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
         try:
@@ -44,7 +49,7 @@ class BaseRepository:
         except DBAPIError:
             raise UncorrectDataException
         return self.mapper.map_to_domain_entity(model)
-    
+
     async def add(self, data: BaseModel):
         add_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         try:
@@ -66,19 +71,18 @@ class BaseRepository:
         await self.session.execute(add_stmt)
 
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
-        
         try:
             smt_check = select(self.model).filter_by(**filter_by)
             result = await self.session.execute(smt_check)
             obj = result.scalars().all()
             if not obj:
                 raise ObjectNotFoundException
-            
+
             edit_stmt = (
-            update(self.model)
-            .filter_by(**filter_by)
-            .values(**data.model_dump(exclude_unset=exclude_unset))
-        )
+                update(self.model)
+                .filter_by(**filter_by)
+                .values(**data.model_dump(exclude_unset=exclude_unset))
+            )
             await self.session.execute(edit_stmt)
 
         except IntegrityError as ex:
@@ -88,7 +92,6 @@ class BaseRepository:
         except DBAPIError:
             raise UncorrectDataException
 
-        
         print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
 
     async def delete(self, **filter_by) -> None:
@@ -103,10 +106,8 @@ class BaseRepository:
             await self.session.execute(delete_stmt)
 
         except IntegrityError as ex:
-            if isinstance(ex.orig.__cause__, UniqueViolationError):
-                raise ObjectAlreadyExistsException from ex
             if isinstance(ex.orig.__cause__, ForeignKeyViolationError):
-                raise ForeinKeyViolationException 
+                raise ForeinKeyViolationException
             raise ex
         except DBAPIError:
             raise UncorrectDataException

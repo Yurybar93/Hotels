@@ -2,7 +2,8 @@ from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload, joinedload
-from src.exceptions import ObjectNotFoundException
+from sqlalchemy.exc import NoResultFound, DBAPIError
+from src.exceptions import RoomNotFoundException, UncorrectDataException, UncorrectRoomDataException
 from src.repositories.mappers.mappers import RoomDataMapper
 
 from src.repositories.base import BaseRepository
@@ -35,8 +36,12 @@ class RoomsRepository(BaseRepository):
         query = (
             select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by)
         )
-        result = await self.session.execute(query)
-        model = result.scalars().first()
-        if model is None:
-            raise ObjectNotFoundException
+
+        try:
+            result = await self.session.execute(query)
+            model = result.scalars().one()
+        except NoResultFound:
+            raise RoomNotFoundException
+        except DBAPIError:
+            raise UncorrectRoomDataException
         return RoomWithRls.model_validate(model, from_attributes=True)

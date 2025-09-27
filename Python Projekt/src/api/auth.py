@@ -53,7 +53,7 @@ async def register_user(
         await db.commit()
         return {"status": "OK"}
     except ObjectAlreadyExistsException:
-            raise HTTPException(status_code=409, detail="User with this email already exists")
+        raise HTTPException(status_code=409, detail="User with this email already exists")
 
 
 @router.get("/me")

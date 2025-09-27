@@ -1,6 +1,3 @@
-
-
-
 from datetime import date
 from fastapi import HTTPException
 
@@ -16,12 +13,28 @@ class ObjectNotFoundException(MyAppException):
     detail = "Object not found"
 
 
+class RoomNotFoundException(ObjectNotFoundException):
+    detail = "Room not found"
+
+
+class HotelNotFoundException(ObjectNotFoundException):
+    detail = "Hotel not found"
+
+
 class AllRoomsBookedException(MyAppException):
     detail = "All rooms are booked"
 
 
 class UncorrectDataException(MyAppException):
     detail = "Uncorrect data"
+
+
+class UncorrectHotelDataException(UncorrectDataException):
+    detail = "Uncorrect hotel data"
+
+
+class UncorrectRoomDataException(UncorrectDataException):
+    detail = "Uncorrect room data"
 
 
 class DataBaseException(MyAppException):
@@ -36,10 +49,14 @@ class ForeinKeyViolationException(MyAppException):
     detail = "Foreign key violation error"
 
 
+class ForeinKeyRoomViolationException(ForeinKeyViolationException):
+    detail = "Foreign key violation error"
+
+
 def check_date_from_bigger_than_date_to(date_from: date, date_to: date):
     if date_from >= date_to:
         raise HTTPException(status_code=400, detail="date_from must be earlier than date_to")
-    
+
 
 class MyAppHTTPException(HTTPException):
     status_code = 500
@@ -47,19 +64,19 @@ class MyAppHTTPException(HTTPException):
 
     def __init__(self):
         super().__init__(status_code=self.status_code, detail=self.detail)
-    
 
-class HotelNotFoundException(MyAppHTTPException):
+
+class HotelNotFoundHTTPException(MyAppHTTPException):
     status_code = 404
     detail = "Hotel not found"
 
 
-class RoomNotFoundException(MyAppHTTPException):
+class RoomNotFoundHTTPException(MyAppHTTPException):
     status_code = 404
     detail = "Room not found"
 
 
-class UncorrectHotelIDException(MyAppHTTPException):
+class UncorrectHotelIDHTTPException(MyAppHTTPException):
     status_code = 400
     detail = "Uncorrect hotel ID"
 
@@ -69,3 +86,11 @@ class ForeignKeyViolationErrorHTTPException(MyAppHTTPException):
     detail = "Blocked: this object is used elsewhere."
 
 
+class UncorrectHotelDataHTTPException(MyAppHTTPException):
+    status_code = 400
+    detail = "Uncorrect hotel data"
+
+
+class UncorrectRoomDataHTTPException(MyAppHTTPException):
+    status_code = 400
+    detail = "Uncorrect room data"

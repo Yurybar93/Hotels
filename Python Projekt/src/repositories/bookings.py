@@ -26,4 +26,3 @@ class BookingsRepository(BaseRepository):
             booking = await self.add(data)
             return booking
         raise AllRoomsBookedException
-            

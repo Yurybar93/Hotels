@@ -2,10 +2,17 @@ from datetime import date
 from fastapi import HTTPException, Query, APIRouter, Body
 from fastapi_cache.decorator import cache
 
-from src.exceptions import ForeinKeyViolationException, HotelNotFoundException, ObjectNotFoundException, UncorrectDataException, UncorrectHotelIDException, ForeignKeyViolationErrorHTTPException
+from src.exceptions import (
+    ForeinKeyViolationException,
+    HotelNotFoundHTTPException,
+    ObjectNotFoundException,
+    UncorrectDataException,
+    UncorrectHotelIDHTTPException,
+    ForeignKeyViolationErrorHTTPException,
+)
 from src.schemas.hotels import HotelAdd, HotelPATCH
 from src.api.dependecies import DBDep, PaginationDep
-from src.services.hotels import HotelService 
+from src.services.hotels import HotelService
 
 
 router = APIRouter(prefix="/hotels", tags=["hotels"])
@@ -35,7 +42,7 @@ async def get_hotel(hotel_id: int, db: DBDep):
     try:
         return HotelService(db).get_hotel(hotel_id)
     except ObjectNotFoundException:
-        raise HotelNotFoundException
+        raise HotelNotFoundHTTPException
     except UncorrectDataException as ex:
         raise HTTPException(status_code=400, detail=ex.detail)
 
@@ -74,7 +81,7 @@ async def update_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBDep):
         await HotelService(db).update_hotel(hotel_id, hotel_data)
         return {"status": "OK"}
     except ObjectNotFoundException:
-        raise HotelNotFoundException
+        raise HotelNotFoundHTTPException
 
 
 @router.patch(
@@ -87,10 +94,10 @@ async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
         await HotelService(db).patch_hotel(hotel_id, hotel_data)
         return {"status": "OK"}
     except ObjectNotFoundException:
-        raise HotelNotFoundException
+        raise HotelNotFoundHTTPException
     except UncorrectDataException as ex:
-        raise UncorrectHotelIDException
-    
+        raise UncorrectHotelIDHTTPException
+
 
 @router.delete("/{hotel_id}")
 async def delete_hotel(hotel_id: int, db: DBDep):
@@ -98,8 +105,8 @@ async def delete_hotel(hotel_id: int, db: DBDep):
         await HotelService(db).delete_hotel(hotel_id)
         return {"status": "OK"}
     except ObjectNotFoundException:
-        raise HotelNotFoundException
+        raise HotelNotFoundHTTPException
     except UncorrectDataException:
-        raise UncorrectHotelIDException
+        raise UncorrectHotelIDHTTPException
     except ForeinKeyViolationException:
         raise ForeignKeyViolationErrorHTTPException

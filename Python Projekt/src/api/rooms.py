@@ -1,10 +1,24 @@
 from datetime import date
 from fastapi import APIRouter, Body, HTTPException, Query
 
-from src.exceptions import HotelNotFoundException, ObjectNotFoundException, DataBaseException, RoomNotFoundException, UncorrectDataException, check_date_from_bigger_than_date_to
-from src.schemas.facilities import RoomFacilityAdd
+from src.services.rooms import RoomService
+from src.exceptions import (
+    ForeignKeyViolationErrorHTTPException,
+    ForeinKeyRoomViolationException,
+    HotelNotFoundException,
+    HotelNotFoundHTTPException,
+    ObjectNotFoundException,
+    DataBaseException,
+    RoomNotFoundException,
+    RoomNotFoundHTTPException,
+    UncorrectDataException,
+    UncorrectHotelDataException,
+    UncorrectHotelDataHTTPException,
+    UncorrectRoomDataException,
+    UncorrectRoomDataHTTPException,
+)
 from src.api.dependecies import DBDep
-from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPATCH, RoomPATCHRequest
+from src.schemas.rooms import RoomAddRequest, RoomPATCH, RoomPATCHRequest
 
 
 router = APIRouter(prefix="/hotels", tags=["Rooms"])
@@ -17,23 +31,21 @@ async def get_rooms(
     date_from: date = Query(example="2025-08-30"),
     date_to: date = Query(example="2025-07-01"),
 ):
-    check_date_from_bigger_than_date_to(date_from, date_to)
-    return await db.rooms.get_filtered_by_time(
-        hotel_id=hotel_id, date_from=date_from, date_to=date_to
-    )
-    
+    return await RoomService(db).get_rooms(hotel_id, date_from, date_to)
 
 
 @router.get("/{hotel_id}/rooms/{room_id}")
 async def get_room(hotel_id: int, room_id: int, db: DBDep):
     try:
-        await db.hotels.get_one(id=hotel_id)
-    except ObjectNotFoundException:
-        raise HotelNotFoundException
-    try:
-        return await db.rooms.get_filtered_with_facilities(id=room_id, hotel_id=hotel_id)
-    except ObjectNotFoundException:
-        raise RoomNotFoundException
+        return await RoomService(db).get_room(hotel_id, room_id)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
+    except UncorrectHotelDataException:
+        raise UncorrectHotelDataHTTPException
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
+    except UncorrectRoomDataException:
+        raise UncorrectRoomDataHTTPException
 
 
 @router.post("/{hotel_id}/rooms")
@@ -66,40 +78,28 @@ async def create_room(
             },
         }
     ),
-):  
+):
     try:
-        await db.hotels.get_one(id=hotel_id)
-    except ObjectNotFoundException:
-        raise HotelNotFoundException
-    try:
-        _room_data = RoomAdd(**room_data.model_dump(), hotel_id=hotel_id)
-        room = await db.rooms.add(_room_data)
-    except UncorrectDataException as ex:
-        raise HTTPException(status_code=400, detail=ex.detail)
-
-    rooms_facilities_data = [
-        RoomFacilityAdd(room_id=room.id, facility_id=facility_id)
-        for facility_id in room_data.facilities_ids
-    ]
-    await db.rooms_facilities.add_bulk(rooms_facilities_data)
-    await db.commit()
+        room = await RoomService(db).create_room(hotel_id, room_data)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
+    except UncorrectHotelDataException:
+        raise UncorrectHotelDataHTTPException
     return {"status": "OK", "data": room}
 
 
 @router.put("/{hotel_id}/rooms/{room_id}")
 async def update_room(hotel_id: int, room_id: int, room_data: RoomAddRequest, db: DBDep):
-    _room_data = RoomAdd(**room_data.model_dump(), hotel_id=hotel_id)
     try:
-        await db.hotels.get_one(id=hotel_id)
-    except ObjectNotFoundException:
-        raise HotelNotFoundException
-    try:
-        await db.rooms.edit(_room_data, id=room_id)
-        await db.rooms_facilities.set_room_facilities(room_id, facility_ids=room_data.facilities_ids)
-    except ObjectNotFoundException:
-        raise RoomNotFoundException
-    except UncorrectDataException as ex:
-        raise HTTPException(status_code=400, detail=ex.detail)
+        await RoomService(db).update_room(hotel_id, room_id, room_data)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
+    except UncorrectHotelDataException:
+        raise UncorrectHotelDataHTTPException
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
+    except UncorrectRoomDataException:
+        raise UncorrectRoomDataHTTPException
     await db.commit()
     return {"status": "OK"}
 
@@ -110,37 +110,31 @@ async def update_room(hotel_id: int, room_id: int, room_data: RoomAddRequest, db
     description="Update specific fields of a hotel record.",
 )
 async def patch_room(hotel_id: int, room_id: int, room_data: RoomPATCHRequest, db: DBDep):
-    room_dict = room_data.model_dump(exclude_unset=True)
-    _room_data = RoomPATCH(**room_dict, hotel_id=hotel_id)
     try:
-        await db.hotels.get_one(id=hotel_id)
-    except ObjectNotFoundException:
-        raise HotelNotFoundException
-    try:
-        await db.rooms.edit(_room_data, exclude_unset=True, id=room_id, hotel_id=hotel_id)
-    except ObjectNotFoundException:
-        raise RoomNotFoundException
-    except UncorrectDataException as ex:
-        raise HTTPException(status_code=400, detail=ex.detail)
-    if "facilities_ids" in room_dict:
-            await db.rooms_facilities.set_room_facilities(
-                room_id, facility_ids=room_dict["facilities_ids"]
-            )
-    await db.commit()
+        await RoomService(db).patch_room(hotel_id, room_id, room_data)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
+    except UncorrectHotelDataException:
+        raise UncorrectHotelDataHTTPException
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
+    except UncorrectRoomDataException:
+        raise UncorrectRoomDataHTTPException
     return {"status": "OK"}
 
 
 @router.delete("/{hotel_id}/rooms/{room_id}")
 async def delete_room(hotel_id: int, room_id: int, db: DBDep):
     try:
-        await db.hotels.get_one(id=hotel_id)
-    except ObjectNotFoundException:
-        raise HotelNotFoundException
-    try:
-        await db.rooms.delete(id=room_id, hotel_id=hotel_id)
-    except DataBaseException:
-        raise HTTPException(status_code=403, detail="Cannot delete room due to existing references")
-    except UncorrectDataException as ex:
-        raise HTTPException(status_code=400, detail=ex.detail)
-    await db.commit()
+        await RoomService(db).delete_room(hotel_id, room_id)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
+    except UncorrectHotelDataException:
+        raise UncorrectHotelDataHTTPException
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
+    except UncorrectRoomDataException:
+        raise UncorrectRoomDataHTTPException
+    except ForeinKeyRoomViolationException:
+        raise ForeignKeyViolationErrorHTTPException
     return {"status": "OK"}
