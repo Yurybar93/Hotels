@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy.exc import DBAPIError
+from src.services.hotels import HotelService
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPATCH, RoomPATCHRequest
 from src.exceptions import (
@@ -29,21 +29,11 @@ class RoomService(BaseService):
         )
 
     async def get_room(self, hotel_id: int, room_id: int):
-        try:
-            await self.db.hotels.get_one(id=hotel_id)
-        except ObjectNotFoundException:
-            raise HotelNotFoundException
-        except UncorrectDataException:
-            raise UncorrectHotelDataException
+        await HotelService(self.db).get_hotel_with_check(hotel_id)
         return await self.db.rooms.get_filtered_with_facilities(id=room_id, hotel_id=hotel_id)
 
     async def create_room(self, hotel_id: int, room_data: RoomAddRequest):
-        try:
-            await self.db.hotels.get_one(id=hotel_id)
-        except ObjectNotFoundException:
-            raise HotelNotFoundException
-        except UncorrectDataException:
-            raise UncorrectHotelDataException
+        await HotelService(self.db).get_hotel_with_check(hotel_id)
         _room_data = RoomAdd(**room_data.model_dump(), hotel_id=hotel_id)
         room = await self.db.rooms.add(_room_data)
 
@@ -56,38 +46,34 @@ class RoomService(BaseService):
 
     async def update_room(self, hotel_id: int, room_id: int, room_data: RoomAddRequest):
         _room_data = RoomAdd(**room_data.model_dump(), hotel_id=hotel_id)
-        try:
-            await self.db.hotels.get_one(id=hotel_id)
-        except ObjectNotFoundException:
-            raise HotelNotFoundException
-        except UncorrectDataException:
-            raise UncorrectHotelDataException
-        try:
-            await self.db.rooms.edit(_room_data, id=room_id)
-            await self.db.rooms_facilities.set_room_facilities(
-                room_id, facility_ids=room_data.facilities_ids
-            )
-        except ObjectNotFoundException:
-            raise RoomNotFoundException
-        except UncorrectDataException:
-            raise UncorrectRoomDataException
+        await HotelService(self.db).get_hotel_with_check(hotel_id)
+        # try:
+        #     await self.db.rooms.edit(_room_data, id=room_id)
+        #     await self.db.rooms_facilities.set_room_facilities(room_id, facility_ids=room_data.facilities_ids)
+        # except ObjectNotFoundException:
+        #     raise RoomNotFoundException
+        # except UncorrectDataException:
+        #     raise UncorrectRoomDataException
+        await self.check_room_with_exceptions(self.db.rooms.edit(_room_data, id=room_id))
+        await self.db.rooms_facilities.set_room_facilities(
+            room_id, facility_ids=room_data.facilities_ids
+        )
         await self.db.commit()
 
     async def patch_room(self, hotel_id: int, room_id: int, room_data: RoomPATCHRequest):
+        await HotelService(self.db).get_hotel_with_check(hotel_id)
         room_dict = room_data.model_dump(exclude_unset=True)
         _room_data = RoomPATCH(**room_dict, hotel_id=hotel_id)
-        try:
-            await self.db.hotels.get_one(id=hotel_id)
-        except ObjectNotFoundException:
-            raise HotelNotFoundException
-        except UncorrectDataException:
-            raise UncorrectHotelDataException
-        try:
-            await self.db.rooms.edit(_room_data, exclude_unset=True, id=room_id, hotel_id=hotel_id)
-        except ObjectNotFoundException:
-            raise RoomNotFoundException
-        except UncorrectDataException:
-            raise UncorrectRoomDataException
+        # try:
+        #     await self.db.rooms.edit(_room_data, exclude_unset=True, id=room_id, hotel_id=hotel_id)
+        # except ObjectNotFoundException:
+        #     raise RoomNotFoundException
+        # except UncorrectDataException:
+        #     raise UncorrectRoomDataException
+        await self.check_room_with_exceptions(
+            self.db.rooms.edit(_room_data, id=room_id, hotel_id=hotel_id)
+        )
+
         if "facilities_ids" in room_dict:
             await self.db.rooms_facilities.set_room_facilities(
                 room_id, facility_ids=room_dict["facilities_ids"]
@@ -95,18 +81,24 @@ class RoomService(BaseService):
         await self.db.commit()
 
     async def delete_room(self, hotel_id: int, room_id: int):
+        await HotelService(self.db).get_hotel_with_check(hotel_id)
+        # try:
+        #     await self.db.rooms.delete(id=room_id, hotel_id=hotel_id)
+        # except ObjectNotFoundException:
+        #     raise RoomNotFoundException
+        # except ForeinKeyViolationException:
+        #     raise ForeinKeyRoomViolationException
+        # except UncorrectDataException:
+        #     raise UncorrectRoomDataException
+        await self.check_room_with_exceptions(self.db.rooms.delete(id=room_id, hotel_id=hotel_id))
+        await self.db.commit()
+
+    async def check_room_with_exceptions(self, coro):
         try:
-            await self.db.hotels.get_one(id=hotel_id)
-        except ObjectNotFoundException:
-            raise HotelNotFoundException
-        except UncorrectDataException:
-            raise UncorrectHotelDataException
-        try:
-            await self.db.rooms.delete(id=room_id, hotel_id=hotel_id)
+            return await coro
         except ObjectNotFoundException:
             raise RoomNotFoundException
-        except ForeinKeyViolationException:
-            raise ForeinKeyRoomViolationException
         except UncorrectDataException:
             raise UncorrectRoomDataException
-        await self.db.commit()
+        except ForeinKeyViolationException:
+            raise ForeinKeyRoomViolationException

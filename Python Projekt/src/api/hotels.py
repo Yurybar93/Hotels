@@ -1,5 +1,5 @@
 from datetime import date
-from fastapi import HTTPException, Query, APIRouter, Body
+from fastapi import Query, APIRouter, Body
 from fastapi_cache.decorator import cache
 
 from src.exceptions import (
@@ -43,8 +43,8 @@ async def get_hotel(hotel_id: int, db: DBDep):
         return HotelService(db).get_hotel(hotel_id)
     except ObjectNotFoundException:
         raise HotelNotFoundHTTPException
-    except UncorrectDataException as ex:
-        raise HTTPException(status_code=400, detail=ex.detail)
+    except UncorrectDataException:
+        raise UncorrectHotelIDHTTPException
 
 
 @router.post("")
@@ -79,9 +79,11 @@ async def create_hotel(
 async def update_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBDep):
     try:
         await HotelService(db).update_hotel(hotel_id, hotel_data)
-        return {"status": "OK"}
     except ObjectNotFoundException:
         raise HotelNotFoundHTTPException
+    except UncorrectDataException:
+        raise UncorrectHotelIDHTTPException
+    return {"status": "OK"}
 
 
 @router.patch(
@@ -95,7 +97,7 @@ async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
         return {"status": "OK"}
     except ObjectNotFoundException:
         raise HotelNotFoundHTTPException
-    except UncorrectDataException as ex:
+    except UncorrectDataException:
         raise UncorrectHotelIDHTTPException
 
 
@@ -103,10 +105,10 @@ async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
 async def delete_hotel(hotel_id: int, db: DBDep):
     try:
         await HotelService(db).delete_hotel(hotel_id)
-        return {"status": "OK"}
     except ObjectNotFoundException:
         raise HotelNotFoundHTTPException
     except UncorrectDataException:
         raise UncorrectHotelIDHTTPException
     except ForeinKeyViolationException:
         raise ForeignKeyViolationErrorHTTPException
+    return {"status": "OK"}

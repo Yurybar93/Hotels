@@ -20,6 +20,11 @@ class RoomNotFoundException(ObjectNotFoundException):
 class HotelNotFoundException(ObjectNotFoundException):
     detail = "Hotel not found"
 
+class UserNotFoundException(ObjectNotFoundException):
+    detail = "User not found"
+
+class UncorrectPasswordException(MyAppException):
+    detail = "Uncorrect password"
 
 class AllRoomsBookedException(MyAppException):
     detail = "All rooms are booked"
@@ -43,6 +48,10 @@ class DataBaseException(MyAppException):
 
 class ObjectAlreadyExistsException(MyAppException):
     detail = "Object with this identifier already exists"
+
+
+class UserAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "User with this identifier already exists"
 
 
 class ForeinKeyViolationException(MyAppException):
@@ -81,16 +90,36 @@ class UncorrectHotelIDHTTPException(MyAppHTTPException):
     detail = "Uncorrect hotel ID"
 
 
+class UncorrectRoomIDHTTPException(MyAppHTTPException):
+    status_code = 400
+    detail = "Uncorrect room ID"
+
+
 class ForeignKeyViolationErrorHTTPException(MyAppHTTPException):
     status_code = 400
     detail = "Blocked: this object is used elsewhere."
 
 
-class UncorrectHotelDataHTTPException(MyAppHTTPException):
-    status_code = 400
-    detail = "Uncorrect hotel data"
+class UserAlreadyExistsHTTPException(MyAppHTTPException):
+    status_code = 409
+    detail = "User with this email already exists"
 
+class UserNotFoundHTTPException(MyAppHTTPException):
+    status_code = 404
+    detail = "User not found"
 
-class UncorrectRoomDataHTTPException(MyAppHTTPException):
-    status_code = 400
-    detail = "Uncorrect room data"
+class UncorrectPasswordHTTPException(MyAppHTTPException):
+    status_code = 401
+    detail = "Uncorrect password"
+
+class InvalidTokenHTTPException(MyAppHTTPException):
+    status_code = 401
+    detail = "Invalid token"
+
+class NoAccessTokenHTTPException(MyAppHTTPException):
+    status_code = 401
+    detail = "No access token"
+
+class AllRoomsBookedHTTPException(MyAppHTTPException):
+    status_code = 409
+    detail = "All rooms are booked"
