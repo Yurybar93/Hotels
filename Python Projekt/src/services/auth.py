@@ -2,7 +2,14 @@ from datetime import datetime, timezone, timedelta
 from passlib.context import CryptContext
 import jwt
 
-from src.exceptions import InvalidTokenHTTPException, ObjectAlreadyExistsException, ObjectNotFoundException, UncorrectPasswordException, UserAlreadyExistsException, UserNotFoundException
+from src.exceptions import (
+    InvalidTokenHTTPException,
+    ObjectAlreadyExistsException,
+    ObjectNotFoundException,
+    UncorrectPasswordException,
+    UserAlreadyExistsException,
+    UserNotFoundException,
+)
 from src.schemas.users import UserAdd, UserLogin, UserRequestAdd
 from src.config import settings
 from src.services.base import BaseService
@@ -33,7 +40,7 @@ class AuthService(BaseService):
             return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         except jwt.exceptions.DecodeError:
             raise InvalidTokenHTTPException
-        
+
     async def register_user(self, data: UserRequestAdd):
         hashed_password = self.hash_password(data.password)
         new_user_data = UserAdd(
@@ -41,13 +48,13 @@ class AuthService(BaseService):
             last_name=data.last_name,
             email=data.email,
             hashed_password=hashed_password,
-    )
+        )
         try:
             await self.db.users.add(new_user_data)
             await self.db.commit()
         except ObjectAlreadyExistsException:
             raise UserAlreadyExistsException
-        
+
     async def login_user(self, data: UserLogin):
         try:
             user = await self.db.users.get_user_with_hashed_passwort(email=data.email)
@@ -57,7 +64,6 @@ class AuthService(BaseService):
             raise UncorrectPasswordException
         access_token = self.create_access_token({"user_id": user.id})
         return access_token
-    
+
     async def get_user(self, user_id: int):
         return await self.db.users.get_one_or_none(id=user_id)
-        

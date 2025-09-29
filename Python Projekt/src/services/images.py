@@ -1,5 +1,3 @@
-
-
 import shutil
 from fastapi import UploadFile, BackgroundTasks
 from src.services.base import BaseService
@@ -14,4 +12,3 @@ class ImageService(BaseService):
 
         # resize_image.delay(image_path)
         background_tasks.add_task(resize_image, image_path)
-

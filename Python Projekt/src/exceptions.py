@@ -20,11 +20,14 @@ class RoomNotFoundException(ObjectNotFoundException):
 class HotelNotFoundException(ObjectNotFoundException):
     detail = "Hotel not found"
 
+
 class UserNotFoundException(ObjectNotFoundException):
     detail = "User not found"
 
+
 class UncorrectPasswordException(MyAppException):
     detail = "Uncorrect password"
+
 
 class AllRoomsBookedException(MyAppException):
     detail = "All rooms are booked"
@@ -104,21 +107,26 @@ class UserAlreadyExistsHTTPException(MyAppHTTPException):
     status_code = 409
     detail = "User with this email already exists"
 
+
 class UserNotFoundHTTPException(MyAppHTTPException):
     status_code = 404
     detail = "User not found"
+
 
 class UncorrectPasswordHTTPException(MyAppHTTPException):
     status_code = 401
     detail = "Uncorrect password"
 
+
 class InvalidTokenHTTPException(MyAppHTTPException):
     status_code = 401
     detail = "Invalid token"
 
+
 class NoAccessTokenHTTPException(MyAppHTTPException):
     status_code = 401
     detail = "No access token"
+
 
 class AllRoomsBookedHTTPException(MyAppHTTPException):
     status_code = 409
