@@ -40,7 +40,7 @@ async def get_hotels(
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int, db: DBDep):
     try:
-        return HotelService(db).get_hotel(hotel_id)
+        return await HotelService(db).get_hotel(hotel_id)
     except ObjectNotFoundException:
         raise HotelNotFoundHTTPException
     except UncorrectDataException:
