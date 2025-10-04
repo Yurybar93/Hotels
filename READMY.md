@@ -1,10 +1,10 @@
-
+git remote add gitlab git@gitlab.com:barynin.yuri-group/booking.git
 
 
 docker run --name booking_db `
     -p 6432:5432 `
     -e POSTGRES_USER=admin `
-    -e POSTGRES_PASSWORD=admin `
+    -e POSTGRES_PASSWORD=355Aa210 `
     -e POSTGRES_DB=booking `
     --network=my_network `
     --volume pg_booking_data:/var/lib/postgresql/data `
