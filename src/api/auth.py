@@ -12,7 +12,7 @@ from src.api.dependecies import DBDep, UserIdDep
 from services.auth import AuthService
 from schemas.users import UserLogin, UserRequestAdd
 
-router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
+router = APIRouter(prefix="/auth", tags=["Authorization and Authentication"])
 
 
 @router.post("/login")

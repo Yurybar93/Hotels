@@ -15,7 +15,7 @@ from src.api.dependecies import DBDep, PaginationDep
 from src.services.hotels import HotelService
 
 
-router = APIRouter(prefix="/hotels", tags=["hotels"])
+router = APIRouter(prefix="/hotels", tags=["Hotels"])
 
 
 @router.get("")
