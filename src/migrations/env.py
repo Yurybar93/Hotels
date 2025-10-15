@@ -70,7 +70,10 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        ac_conn = connection.execution_options(isolation_level="AUTOCOMMIT")
+        ac_conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS citext")
+
+        context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
 
         with context.begin_transaction():
             context.run_migrations()

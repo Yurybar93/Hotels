@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 
 
 class HotelAdd(BaseModel):
-    title: str
-    location: str
+    title: constr(min_length=1, max_length=100)
+    location: constr(min_length=1, max_length=100)
 
 
 class Hotel(HotelAdd):
@@ -11,5 +11,5 @@ class Hotel(HotelAdd):
 
 
 class HotelPATCH(BaseModel):
-    title: str | None = None
-    location: str | None = None
+    title: constr(min_length=1, max_length=100) | None = None
+    location: constr(min_length=1, max_length=100) | None = None

@@ -37,6 +37,10 @@ class UncorrectDataException(MyAppException):
     detail = "Uncorrect data"
 
 
+class UncorrectincorrectFieldsException(MyAppException):
+    detail = "Uncorrect fields"
+
+
 class UncorrectHotelDataException(UncorrectDataException):
     detail = "Uncorrect hotel data"
 
@@ -55,6 +59,10 @@ class ObjectAlreadyExistsException(MyAppException):
 
 class UserAlreadyExistsException(ObjectAlreadyExistsException):
     detail = "User with this identifier already exists"
+
+
+class HotelAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Hotel already exists"
 
 
 class ForeinKeyViolationException(MyAppException):
@@ -108,6 +116,11 @@ class UserAlreadyExistsHTTPException(MyAppHTTPException):
     detail = "User with this email already exists"
 
 
+class HotelAlreadyExistsHTTPException(MyAppHTTPException):
+    status_code = 409
+    detail = "Hotel with this title and location already exists"
+
+
 class UserNotFoundHTTPException(MyAppHTTPException):
     status_code = 404
     detail = "User not found"
@@ -131,3 +144,8 @@ class NoAccessTokenHTTPException(MyAppHTTPException):
 class AllRoomsBookedHTTPException(MyAppHTTPException):
     status_code = 409
     detail = "All rooms are booked"
+
+
+class UncorrectFieldsHTTPException(MyAppHTTPException):
+    status_code = 400
+    detail = "No fields"

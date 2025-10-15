@@ -2,14 +2,15 @@ import logging
 from asyncpg import ForeignKeyViolationError
 from pydantic import BaseModel
 
-from asyncpg.exceptions import UniqueViolationError
+from asyncpg.exceptions import UniqueViolationError, DataError
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.exc import NoResultFound, DBAPIError, IntegrityError
+from sqlalchemy.exc import NoResultFound, DBAPIError, IntegrityError, ProgrammingError
 from src.exceptions import (
     ForeinKeyViolationException,
     ObjectNotFoundException,
     UncorrectDataException,
     ObjectAlreadyExistsException,
+    UncorrectincorrectFieldsException,
 )
 from src.repositories.mappers.base import DataMapper
 from src.database import engine
@@ -89,8 +90,13 @@ class BaseRepository:
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             raise ex
-        except DBAPIError:
-            raise UncorrectDataException
+        except ProgrammingError:
+            raise UncorrectincorrectFieldsException
+        except DBAPIError as ex:
+            if isinstance(ex.orig.__cause__, DataError):
+                raise UncorrectDataException
+            raise ex
+        
 
         print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
 

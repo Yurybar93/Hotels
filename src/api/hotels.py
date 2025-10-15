@@ -4,11 +4,15 @@ from fastapi_cache.decorator import cache
 
 from src.exceptions import (
     ForeinKeyViolationException,
+    HotelAlreadyExistsException,
+    HotelAlreadyExistsHTTPException,
     HotelNotFoundHTTPException,
     ObjectNotFoundException,
     UncorrectDataException,
+    UncorrectFieldsHTTPException,
     UncorrectHotelIDHTTPException,
     ForeignKeyViolationErrorHTTPException,
+    UncorrectincorrectFieldsException,
 )
 from src.schemas.hotels import HotelAdd, HotelPATCH
 from src.api.dependecies import DBDep, PaginationDep
@@ -71,8 +75,11 @@ async def create_hotel(
         }
     ),
 ):
-    hotel = await HotelService(db).create_hotel(hotel_data)
-    return {"status": "OK", "data": hotel}
+    try:
+        hotel = await HotelService(db).create_hotel(hotel_data)
+        return {"status": "OK", "data": hotel}
+    except HotelAlreadyExistsException:
+        raise HotelAlreadyExistsHTTPException
 
 
 @router.put("/{hotel_id}")
@@ -83,6 +90,8 @@ async def update_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBDep):
         raise HotelNotFoundHTTPException
     except UncorrectDataException:
         raise UncorrectHotelIDHTTPException
+    except UncorrectincorrectFieldsException:
+        raise UncorrectFieldsHTTPException
     return {"status": "OK"}
 
 
@@ -99,6 +108,8 @@ async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
         raise HotelNotFoundHTTPException
     except UncorrectDataException:
         raise UncorrectHotelIDHTTPException
+    except UncorrectincorrectFieldsException:
+        raise UncorrectFieldsHTTPException
 
 
 @router.delete("/{hotel_id}")
