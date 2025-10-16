@@ -73,6 +73,10 @@ class ForeinKeyRoomViolationException(ForeinKeyViolationException):
     detail = "Foreign key violation error"
 
 
+class NotFacilitiesException(MyAppException):
+    detail = "One or more facilities do not exist"
+
+
 def check_date_from_bigger_than_date_to(date_from: date, date_to: date):
     if date_from >= date_to:
         raise HTTPException(status_code=400, detail="date_from must be earlier than date_to")
@@ -121,6 +125,11 @@ class HotelAlreadyExistsHTTPException(MyAppHTTPException):
     detail = "Hotel with this title and location already exists"
 
 
+class RoomAlreadyExistsHTTPException(MyAppHTTPException):
+    status_code = 409
+    detail = "Room with this title, description and price already exists in this hotel"
+
+
 class UserNotFoundHTTPException(MyAppHTTPException):
     status_code = 404
     detail = "User not found"
@@ -149,3 +158,9 @@ class AllRoomsBookedHTTPException(MyAppHTTPException):
 class UncorrectFieldsHTTPException(MyAppHTTPException):
     status_code = 400
     detail = "No fields"
+
+
+class FacilitisNotExistsHTTPException(MyAppHTTPException):
+    status_code = 400
+    detail = "One or more facilities do not exist"
+

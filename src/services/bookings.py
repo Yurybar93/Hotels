@@ -15,12 +15,6 @@ class BookingService(BaseService):
         room = await RoomService(self.db).check_room_with_exceptions(
             self.db.rooms.get_one(id=booking_data.room_id)
         )
-        # try:
-        #     room = await self.db.rooms.get_one(id=booking_data.room_id)
-        # except ObjectNotFoundException:
-        #     raise HTTPException(status_code=400, detail="Room not found")
-        # except UncorrectDataException as ex:
-        #     raise HTTPException(status_code=400, detail=ex.detail)
 
         _booking_data = BookingAdd(**booking_data.model_dump(), user_id=user_id, price=room.price)
         try:

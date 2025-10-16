@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 
 from src.schemas.facilities import Facility
 
@@ -12,7 +12,7 @@ class RoomAdd(BaseModel):
 
 
 class RoomAddRequest(BaseModel):
-    title: str
+    title: constr(min_length=1, max_length=100)
     description: str | None = None
     price: int
     quantity: int
@@ -36,8 +36,8 @@ class RoomPATCH(BaseModel):
 
 
 class RoomPATCHRequest(BaseModel):
-    title: str | None = None
-    description: str | None = None
+    title: constr(min_length=1, max_length=100) | None = None
+    description: constr(min_length=1, max_length=100) | None = None
     price: int | None = None
     quantity: int | None = None
     facilities_ids: list[int] | None = None

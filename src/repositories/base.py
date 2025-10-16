@@ -1,5 +1,5 @@
 import logging
-from asyncpg import ForeignKeyViolationError
+from asyncpg import ForeignKeyViolationError, NotNullViolationError
 from pydantic import BaseModel
 
 from asyncpg.exceptions import UniqueViolationError, DataError
@@ -68,8 +68,15 @@ class BaseRepository:
         return self.mapper.map_to_domain_entity(model)
 
     async def add_bulk(self, data: list[BaseModel]):
-        add_stmt = insert(self.model).values([item.model_dump() for item in data])
-        await self.session.execute(add_stmt)
+        try:
+            add_stmt = insert(self.model).values([item.model_dump() for item in data])
+            await self.session.execute(add_stmt)
+        except IntegrityError as ex:
+            if isinstance(ex.orig.__cause__, ForeignKeyViolationError):
+                raise ForeinKeyViolationException from ex
+            raise ex
+            
+
 
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         try:
@@ -89,6 +96,10 @@ class BaseRepository:
         except IntegrityError as ex:
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
+            if isinstance(ex.orig.__cause__, ForeignKeyViolationError):
+                raise ForeinKeyViolationException
+            if isinstance(ex.orig.__cause__, NotNullViolationError):
+                raise UncorrectincorrectFieldsException from ex
             raise ex
         except ProgrammingError:
             raise UncorrectincorrectFieldsException

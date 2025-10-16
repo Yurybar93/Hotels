@@ -1,5 +1,6 @@
 from sqlalchemy import func, select
 
+from src.exceptions import HotelNotFoundException
 from src.repositories.mappers.mappers import HotelDataMapper
 from src.models.rooms import RoomsOrm
 from src.repositories.utils import room_ids_for_booking
@@ -39,5 +40,8 @@ class HotelsRepository(BaseRepository):
             query = query.filter(func.lower(HotelsOrm.location).contains(location.strip().lower()))
         query = query.limit(limit).offset(offset)
         result = await self.session.execute(query)
+        hotels = result.scalars().all()
+        if not hotels:
+            raise HotelNotFoundException
         print(query.compile(compile_kwargs={"literal_binds": True}))
-        return [self.mapper.map_to_domain_entity(hotel) for hotel in result.scalars().all()]
+        return [self.mapper.map_to_domain_entity(hotel) for hotel in hotels]

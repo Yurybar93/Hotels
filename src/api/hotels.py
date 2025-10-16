@@ -6,6 +6,7 @@ from src.exceptions import (
     ForeinKeyViolationException,
     HotelAlreadyExistsException,
     HotelAlreadyExistsHTTPException,
+    HotelNotFoundException,
     HotelNotFoundHTTPException,
     ObjectNotFoundException,
     UncorrectDataException,
@@ -32,13 +33,16 @@ async def get_hotels(
     date_from: date = Query(example="2025-08-30"),
     date_to: date = Query(example="2025-07-01"),
 ):
-    return await HotelService(db).get_hotels(
-        pagination,
-        title,
-        location,
-        date_from,
-        date_to,
-    )
+    try:
+        return await HotelService(db).get_hotels(
+            pagination,
+            title,
+            location,
+            date_from,
+            date_to,
+        )
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
 
 
 @router.get("/{hotel_id}")
@@ -90,8 +94,6 @@ async def update_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBDep):
         raise HotelNotFoundHTTPException
     except UncorrectDataException:
         raise UncorrectHotelIDHTTPException
-    except UncorrectincorrectFieldsException:
-        raise UncorrectFieldsHTTPException
     return {"status": "OK"}
 
 

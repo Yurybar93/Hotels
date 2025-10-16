@@ -3,16 +3,22 @@ from fastapi import APIRouter, Body, Query
 
 from src.services.rooms import RoomService
 from src.exceptions import (
+    FacilitisNotExistsHTTPException,
     ForeignKeyViolationErrorHTTPException,
     ForeinKeyRoomViolationException,
+    ForeinKeyViolationException,
     HotelNotFoundException,
     HotelNotFoundHTTPException,
+    ObjectAlreadyExistsException,
+    RoomAlreadyExistsHTTPException,
     RoomNotFoundException,
     RoomNotFoundHTTPException,
+    UncorrectFieldsHTTPException,
     UncorrectHotelDataException,
     UncorrectHotelIDHTTPException,
     UncorrectRoomDataException,
     UncorrectRoomIDHTTPException,
+    UncorrectincorrectFieldsException,
 )
 from src.api.dependecies import DBDep
 from src.schemas.rooms import RoomAddRequest, RoomPATCHRequest
@@ -28,7 +34,10 @@ async def get_rooms(
     date_from: date = Query(example="2025-08-30"),
     date_to: date = Query(example="2025-07-01"),
 ):
-    return await RoomService(db).get_rooms(hotel_id, date_from, date_to)
+    try:
+        return await RoomService(db).get_rooms(hotel_id, date_from, date_to)
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
 
 
 @router.get("/{hotel_id}/rooms/{room_id}")
@@ -77,12 +86,16 @@ async def create_room(
     ),
 ):
     try:
-        room = await RoomService(db).create_room(hotel_id, room_data)
+        await RoomService(db).create_room(hotel_id, room_data)
     except HotelNotFoundException:
         raise HotelNotFoundHTTPException
+    except ObjectAlreadyExistsException:
+        raise RoomAlreadyExistsHTTPException
     except UncorrectHotelDataException:
         raise UncorrectHotelIDHTTPException
-    return {"status": "OK", "data": room}
+    except ForeinKeyViolationException:
+        raise FacilitisNotExistsHTTPException
+    return {"status": "OK"}
 
 
 @router.put("/{hotel_id}/rooms/{room_id}")
@@ -97,6 +110,8 @@ async def update_room(hotel_id: int, room_id: int, room_data: RoomAddRequest, db
         raise RoomNotFoundHTTPException
     except UncorrectRoomDataException:
         raise UncorrectRoomIDHTTPException
+    except ForeinKeyViolationException:
+        raise FacilitisNotExistsHTTPException
     await db.commit()
     return {"status": "OK"}
 
@@ -117,6 +132,10 @@ async def patch_room(hotel_id: int, room_id: int, room_data: RoomPATCHRequest, d
         raise RoomNotFoundHTTPException
     except UncorrectRoomDataException:
         raise UncorrectRoomIDHTTPException
+    except ForeinKeyViolationException:
+        raise FacilitisNotExistsHTTPException
+    except UncorrectincorrectFieldsException:
+        raise UncorrectFieldsHTTPException
     return {"status": "OK"}
 
 
