@@ -30,7 +30,11 @@ class BaseRepository:
         return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
     async def get_all(self, *args, **kwargs):
-        return await self.get_filtered()
+        result = await self.get_filtered()
+        if not result:
+            raise ObjectNotFoundException
+        return result
+        
 
     async def get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)

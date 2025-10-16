@@ -164,3 +164,8 @@ class FacilitisNotExistsHTTPException(MyAppHTTPException):
     status_code = 400
     detail = "One or more facilities do not exist"
 
+
+class BookingNotFoundHTTPException(MyAppHTTPException):
+    status_code = 404
+    detail = "Bookings not found"
+
