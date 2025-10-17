@@ -1,7 +1,8 @@
 from typing import Annotated
-from fastapi import Depends, Query, Request
+from fastapi import Depends, Query, Body, Request
 from pydantic import BaseModel
 
+from src.schemas.rooms import RoomPATCHRequest
 from src.exceptions import NoAccessTokenHTTPException
 from src.services.auth import AuthService
 from src.database import async_session
@@ -39,3 +40,4 @@ async def get_db():
 
 
 DBDep = Annotated[DBManager, Depends(get_db)]
+

@@ -12,12 +12,7 @@ router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 @router.get("")
 async def get_bookings(db: DBDep):
-    try:
-        return await BookingService(db).get_bookings()
-    except ObjectNotFoundException:
-        raise BookingNotFoundHTTPException
-
-
+    return await BookingService(db).get_bookings()
 
 
 @router.get("/me")

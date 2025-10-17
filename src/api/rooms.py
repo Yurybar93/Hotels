@@ -13,12 +13,10 @@ from src.exceptions import (
     RoomAlreadyExistsHTTPException,
     RoomNotFoundException,
     RoomNotFoundHTTPException,
-    UncorrectFieldsHTTPException,
     UncorrectHotelDataException,
     UncorrectHotelIDHTTPException,
     UncorrectRoomDataException,
     UncorrectRoomIDHTTPException,
-    UncorrectincorrectFieldsException,
 )
 from src.api.dependecies import DBDep
 from src.schemas.rooms import RoomAddRequest, RoomPATCHRequest
@@ -134,8 +132,6 @@ async def patch_room(hotel_id: int, room_id: int, room_data: RoomPATCHRequest, d
         raise UncorrectRoomIDHTTPException
     except ForeinKeyViolationException:
         raise FacilitisNotExistsHTTPException
-    except UncorrectincorrectFieldsException:
-        raise UncorrectFieldsHTTPException
     return {"status": "OK"}
 
 

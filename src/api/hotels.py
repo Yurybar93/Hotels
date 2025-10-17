@@ -10,10 +10,8 @@ from src.exceptions import (
     HotelNotFoundHTTPException,
     ObjectNotFoundException,
     UncorrectDataException,
-    UncorrectFieldsHTTPException,
     UncorrectHotelIDHTTPException,
     ForeignKeyViolationErrorHTTPException,
-    UncorrectincorrectFieldsException,
 )
 from src.schemas.hotels import HotelAdd, HotelPATCH
 from src.api.dependecies import DBDep, PaginationDep
@@ -110,8 +108,7 @@ async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
         raise HotelNotFoundHTTPException
     except UncorrectDataException:
         raise UncorrectHotelIDHTTPException
-    except UncorrectincorrectFieldsException:
-        raise UncorrectFieldsHTTPException
+   
 
 
 @router.delete("/{hotel_id}")

@@ -1,16 +1,15 @@
 import logging
-from asyncpg import ForeignKeyViolationError, NotNullViolationError
+from asyncpg import ForeignKeyViolationError
 from pydantic import BaseModel
 
 from asyncpg.exceptions import UniqueViolationError, DataError
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.exc import NoResultFound, DBAPIError, IntegrityError, ProgrammingError
+from sqlalchemy.exc import NoResultFound, DBAPIError, IntegrityError
 from src.exceptions import (
     ForeinKeyViolationException,
     ObjectNotFoundException,
     UncorrectDataException,
     ObjectAlreadyExistsException,
-    UncorrectincorrectFieldsException,
 )
 from src.repositories.mappers.base import DataMapper
 from src.database import engine
@@ -30,10 +29,8 @@ class BaseRepository:
         return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
     async def get_all(self, *args, **kwargs):
-        result = await self.get_filtered()
-        if not result:
-            raise ObjectNotFoundException
-        return result
+        return await self.get_filtered()
+      
         
 
     async def get_one_or_none(self, **filter_by):
@@ -102,11 +99,6 @@ class BaseRepository:
                 raise ObjectAlreadyExistsException from ex
             if isinstance(ex.orig.__cause__, ForeignKeyViolationError):
                 raise ForeinKeyViolationException
-            if isinstance(ex.orig.__cause__, NotNullViolationError):
-                raise UncorrectincorrectFieldsException from ex
-            raise ex
-        except ProgrammingError:
-            raise UncorrectincorrectFieldsException
         except DBAPIError as ex:
             if isinstance(ex.orig.__cause__, DataError):
                 raise UncorrectDataException

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, constr, model_validator
 
 from src.schemas.facilities import Facility
 
@@ -41,3 +41,9 @@ class RoomPATCHRequest(BaseModel):
     price: int | None = None
     quantity: int | None = None
     facilities_ids: list[int] | None = None
+
+    @model_validator(mode="after")
+    def at_least_one_field(self):
+        if not self.model_dump(exclude_none=True):
+            raise ValueError("The request body must contain at least one field.")
+        return self

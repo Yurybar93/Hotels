@@ -37,10 +37,6 @@ class UncorrectDataException(MyAppException):
     detail = "Uncorrect data"
 
 
-class UncorrectincorrectFieldsException(MyAppException):
-    detail = "Uncorrect fields"
-
-
 class UncorrectHotelDataException(UncorrectDataException):
     detail = "Uncorrect hotel data"
 
@@ -153,11 +149,6 @@ class NoAccessTokenHTTPException(MyAppHTTPException):
 class AllRoomsBookedHTTPException(MyAppHTTPException):
     status_code = 409
     detail = "All rooms are booked"
-
-
-class UncorrectFieldsHTTPException(MyAppHTTPException):
-    status_code = 400
-    detail = "No fields"
 
 
 class FacilitisNotExistsHTTPException(MyAppHTTPException):
