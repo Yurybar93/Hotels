@@ -14,5 +14,3 @@ class ImagesService(BaseService):
 
         # resize_image.delay(image_path)
         background_tasks.add_task(resize_image, image_path)
-
-

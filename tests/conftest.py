@@ -28,7 +28,7 @@ async def check_database():
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_database):
     async with engine_null_pool.begin() as conn:
-        await conn.execute(text('CREATE EXTENSION IF NOT EXISTS citext'))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 

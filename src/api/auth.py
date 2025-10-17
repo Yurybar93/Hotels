@@ -58,9 +58,9 @@ async def get_me(user_id: UserIdDep, db: DBDep):
 
 
 @router.post("/logout")
-async def logout_user(request: Request,response: Response):
+async def logout_user(request: Request, response: Response):
     if "access_token" not in request.cookies:
         return {"status": "already_logged_out"}
-    
+
     response.delete_cookie("access_token")
     return {"status": "OK"}

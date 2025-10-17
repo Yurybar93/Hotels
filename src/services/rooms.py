@@ -44,12 +44,11 @@ class RoomService(BaseService):
         if rooms_facilities_data:
             await self.db.rooms_facilities.add_bulk(rooms_facilities_data)
         await self.db.commit()
-        
 
     async def update_room(self, hotel_id: int, room_id: int, room_data: RoomAddRequest):
         _room_data = RoomAdd(**room_data.model_dump(), hotel_id=hotel_id)
         await HotelService(self.db).get_hotel_with_check(hotel_id)
-    
+
         await self.check_room_with_exceptions(self.db.rooms.edit(_room_data, id=room_id))
         await self.db.rooms_facilities.set_room_facilities(
             room_id, facility_ids=room_data.facilities_ids

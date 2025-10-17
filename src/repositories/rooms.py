@@ -30,10 +30,7 @@ class RoomsRepository(BaseRepository):
         if not rooms:
             raise RoomNotFoundException
         print(query.compile(compile_kwargs={"literal_binds": True}))
-        return [
-            RoomWithRls.model_validate(model, from_attributes=True)
-            for model in rooms
-        ]
+        return [RoomWithRls.model_validate(model, from_attributes=True) for model in rooms]
 
     async def get_filtered_with_facilities(self, **filter_by):
         query = (

@@ -41,7 +41,5 @@ class HotelsRepository(BaseRepository):
         query = query.limit(limit).offset(offset)
         result = await self.session.execute(query)
         hotels = result.scalars().all()
-        if not hotels:
-            raise HotelNotFoundException
         print(query.compile(compile_kwargs={"literal_binds": True}))
         return [self.mapper.map_to_domain_entity(hotel) for hotel in hotels]

@@ -30,8 +30,6 @@ class BaseRepository:
 
     async def get_all(self, *args, **kwargs):
         return await self.get_filtered()
-      
-        
 
     async def get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
@@ -76,8 +74,6 @@ class BaseRepository:
             if isinstance(ex.orig.__cause__, ForeignKeyViolationError):
                 raise ForeinKeyViolationException from ex
             raise ex
-            
-
 
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         try:
@@ -103,7 +99,6 @@ class BaseRepository:
             if isinstance(ex.orig.__cause__, DataError):
                 raise UncorrectDataException
             raise ex
-        
 
         print(edit_stmt.compile(self.session.bind, compile_kwargs={"literal_binds": True}))
 

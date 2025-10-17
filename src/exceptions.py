@@ -159,4 +159,3 @@ class FacilitisNotExistsHTTPException(MyAppHTTPException):
 class BookingNotFoundHTTPException(MyAppHTTPException):
     status_code = 404
     detail = "Bookings not found"
-

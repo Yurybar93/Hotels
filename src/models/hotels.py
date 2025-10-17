@@ -12,6 +12,4 @@ class HotelsOrm(Base):
     title: Mapped[str] = mapped_column(CITEXT)
     location: Mapped[str] = mapped_column(CITEXT)
 
-    __table_args__ = (
-        UniqueConstraint("title", "location", name="uix_title_location"),
-    )
+    __table_args__ = (UniqueConstraint("title", "location", name="uix_title_location"),)

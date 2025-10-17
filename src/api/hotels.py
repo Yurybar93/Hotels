@@ -31,16 +31,13 @@ async def get_hotels(
     date_from: date = Query(example="2025-08-30"),
     date_to: date = Query(example="2025-07-01"),
 ):
-    try:
-        return await HotelService(db).get_hotels(
-            pagination,
-            title,
-            location,
-            date_from,
-            date_to,
-        )
-    except HotelNotFoundException:
-        raise HotelNotFoundHTTPException
+    return await HotelService(db).get_hotels(
+        pagination,
+        title,
+        location,
+        date_from,
+        date_to,
+    )
 
 
 @router.get("/{hotel_id}")
@@ -108,7 +105,6 @@ async def patch_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
         raise HotelNotFoundHTTPException
     except UncorrectDataException:
         raise UncorrectHotelIDHTTPException
-   
 
 
 @router.delete("/{hotel_id}")

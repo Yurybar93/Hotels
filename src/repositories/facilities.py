@@ -36,7 +36,10 @@ class RoomsFacilitiesRepository(BaseRepository):
 
             if get_ids_to_add:
                 add_stmt = insert(self.model).values(
-                    [{"room_id": room_id, "facility_id": facility_id} for facility_id in get_ids_to_add]
+                    [
+                        {"room_id": room_id, "facility_id": facility_id}
+                        for facility_id in get_ids_to_add
+                    ]
                 )
                 await self.session.execute(add_stmt)
         except IntegrityError as ex:
