@@ -3,17 +3,19 @@ import redis.asyncio as redis
 
 
 class RedisConnector:
+    _redis: redis.Redis
+
     def __init__(self, host: str, port: int):
         self.host = host
         self.port = port
-        self.redis = None
+       
 
     async def connect(self):
         logging.info(f"Connecting to Redis host={self.host}, port={self.port}")
         self.redis = redis.Redis(host=self.host, port=self.port)
         logging.info("Connected to Redis")
 
-    async def set_value(self, key: str, value: str, expire: int = None):
+    async def set_value(self, key: str, value: str, expire: int | None = None):
         if expire:
             await self.redis.set(key, value, ex=expire)
         else:

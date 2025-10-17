@@ -1,4 +1,6 @@
 import logging
+from typing import Sequence, Any
+
 from asyncpg import ForeignKeyViolationError
 from pydantic import BaseModel
 
@@ -22,16 +24,16 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_filtered(self, *filter, **filter_by):
+    async def get_filtered(self, *filter, **filter_by) -> list[BaseModel | Any]:
         query = select(self.model).filter(*filter).filter_by(**filter_by)
         result = await self.session.execute(query)
         print(query.compile(compile_kwargs={"literal_binds": True}))
         return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
-    async def get_all(self, *args, **kwargs):
+    async def get_all(self, *args, **kwargs) -> list[BaseModel | Any]:
         return await self.get_filtered()
 
-    async def get_one_or_none(self, **filter_by):
+    async def get_one_or_none(self, **filter_by) -> BaseModel | None | Any:
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
         model = result.scalars().one_or_none()
@@ -39,7 +41,7 @@ class BaseRepository:
             return None
         return self.mapper.map_to_domain_entity(model)
 
-    async def get_one(self, **filter_by):
+    async def get_one(self, **filter_by) -> BaseModel:
         query = select(self.model).filter_by(**filter_by)
         try:
             result = await self.session.execute(query)
@@ -50,14 +52,14 @@ class BaseRepository:
             raise UncorrectDataException
         return self.mapper.map_to_domain_entity(model)
 
-    async def add(self, data: BaseModel):
+    async def add(self, data: BaseModel) -> BaseModel | Any:
         add_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         try:
             model = await self.session.execute(add_stmt)
             print(add_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
             model = model.scalars().one()
         except IntegrityError as ex:
-            logging.error(f"Unable to add data: {data}. Type error: {type(ex.orig.__cause__)=}")
+            logging.error(f"Unable to add data: {data}.")
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             logging.error(f"Unknown error: {type(ex.orig.__cause__)=}")
@@ -66,7 +68,7 @@ class BaseRepository:
             raise UncorrectDataException
         return self.mapper.map_to_domain_entity(model)
 
-    async def add_bulk(self, data: list[BaseModel]):
+    async def add_bulk(self, data: Sequence[BaseModel]) -> None:
         try:
             add_stmt = insert(self.model).values([item.model_dump() for item in data])
             await self.session.execute(add_stmt)
