@@ -1,8 +1,11 @@
 venv/
 .idea
+.vscode
+*.iml
 Dockerfile
 __pycache__
 .env
 *.md
 celerybeat-schedule.*
 dump.rdb
+requirements-dev.txt
