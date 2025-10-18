@@ -45,10 +45,6 @@ class UncorrectRoomDataException(UncorrectDataException):
     detail = "Uncorrect room data"
 
 
-class DataBaseException(MyAppException):
-    detail = "Database error"
-
-
 class ObjectAlreadyExistsException(MyAppException):
     detail = "Object with this identifier already exists"
 
@@ -67,10 +63,6 @@ class ForeinKeyViolationException(MyAppException):
 
 class ForeinKeyRoomViolationException(ForeinKeyViolationException):
     detail = "Foreign key violation error"
-
-
-class NotFacilitiesException(MyAppException):
-    detail = "One or more facilities do not exist"
 
 
 def check_date_from_bigger_than_date_to(date_from: date, date_to: date):
@@ -126,6 +118,11 @@ class RoomAlreadyExistsHTTPException(MyAppHTTPException):
     detail = "Room with this title, description and price already exists in this hotel"
 
 
+class FacilityAlreadyExistsHTTPException(MyAppHTTPException):
+    status_code = 409
+    detail = "Facility with this title already exists"
+
+
 class UserNotFoundHTTPException(MyAppHTTPException):
     status_code = 404
     detail = "User not found"
@@ -154,8 +151,3 @@ class AllRoomsBookedHTTPException(MyAppHTTPException):
 class FacilitisNotExistsHTTPException(MyAppHTTPException):
     status_code = 400
     detail = "One or more facilities do not exist"
-
-
-class BookingNotFoundHTTPException(MyAppHTTPException):
-    status_code = 404
-    detail = "Bookings not found"

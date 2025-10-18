@@ -2,8 +2,6 @@ from fastapi import Body
 from fastapi import APIRouter
 
 from src.exceptions import (
-    BookingNotFoundHTTPException,
-    ObjectNotFoundException,
     RoomNotFoundException,
     RoomNotFoundHTTPException,
 )

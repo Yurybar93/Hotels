@@ -6,7 +6,6 @@ from src.exceptions import (
     ForeinKeyViolationException,
     HotelAlreadyExistsException,
     HotelAlreadyExistsHTTPException,
-    HotelNotFoundException,
     HotelNotFoundHTTPException,
     ObjectNotFoundException,
     UncorrectDataException,

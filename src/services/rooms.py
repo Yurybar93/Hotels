@@ -6,11 +6,9 @@ from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPATCH, RoomPATCHReque
 from src.exceptions import (
     ForeinKeyRoomViolationException,
     ForeinKeyViolationException,
-    HotelNotFoundException,
     ObjectNotFoundException,
     RoomNotFoundException,
     UncorrectDataException,
-    UncorrectHotelDataException,
     UncorrectRoomDataException,
     check_date_from_bigger_than_date_to,
 )
@@ -71,14 +69,6 @@ class RoomService(BaseService):
 
     async def delete_room(self, hotel_id: int, room_id: int):
         await HotelService(self.db).get_hotel_with_check(hotel_id)
-        # try:
-        #     await self.db.rooms.delete(id=room_id, hotel_id=hotel_id)
-        # except ObjectNotFoundException:
-        #     raise RoomNotFoundException
-        # except ForeinKeyViolationException:
-        #     raise ForeinKeyRoomViolationException
-        # except UncorrectDataException:
-        #     raise UncorrectRoomDataException
         await self.check_room_with_exceptions(self.db.rooms.delete(id=room_id, hotel_id=hotel_id))
         await self.db.commit()
 

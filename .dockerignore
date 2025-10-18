@@ -2,4 +2,7 @@ venv/
 .idea
 Dockerfile
 __pycache__
-#.env
+.env
+*.md
+celerybeat-schedule.*
+dump.rdb

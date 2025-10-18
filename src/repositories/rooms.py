@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.exc import NoResultFound, DBAPIError
-from src.exceptions import RoomNotFoundException, UncorrectDataException, UncorrectRoomDataException
+from src.exceptions import RoomNotFoundException, UncorrectRoomDataException
 from src.repositories.mappers.mappers import RoomDataMapper
 
 from src.repositories.base import BaseRepository
@@ -27,8 +27,6 @@ class RoomsRepository(BaseRepository):
         )
         result = await self.session.execute(query)
         rooms = result.unique().scalars().all()
-        if not rooms:
-            raise RoomNotFoundException
         print(query.compile(compile_kwargs={"literal_binds": True}))
         return [RoomWithRls.model_validate(model, from_attributes=True) for model in rooms]
 

@@ -8,7 +8,6 @@ class RedisConnector:
     def __init__(self, host: str, port: int):
         self.host = host
         self.port = port
-       
 
     async def connect(self):
         logging.info(f"Connecting to Redis host={self.host}, port={self.port}")
