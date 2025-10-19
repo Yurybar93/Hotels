@@ -2,12 +2,14 @@ services:
   booking_back_service:
     container_name: "booking_back"
     image: booking-api-image:latest
+    env_file: .env
     networks:
       - my_network
 
   celery_worker_service:
     container_name: "celery_worker"
     image: booking-api-image:latest
+    env_file: .env
     networks:
       - my_network
     command: "celery -A src.tasks.celery_app:celery_instance worker -l INFO"
@@ -15,6 +17,7 @@ services:
   celery_beat_service:
     container_name: "celery_beat"
     image: booking-api-image:latest
+    env_file: .env
     networks:
       - my_network
     command: "celery -A src.tasks.celery_app:celery_instance beat -l INFO"
