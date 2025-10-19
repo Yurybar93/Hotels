@@ -29,7 +29,7 @@ Format:
 Migrations:
   stage: migrations
   script: 
-      - docker run --rm --network my_network booking-api-image alembic upgrade head
+      docker run --rm --env-file .env --network my_network booking-api-image alembic upgrade head
 
 Tests:
   stage: tests
