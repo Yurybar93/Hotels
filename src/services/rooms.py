@@ -1,5 +1,4 @@
 from datetime import date
-from sqlalchemy.exc import IntegrityError
 from src.services.hotels import HotelService
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPATCH, RoomPATCHRequest

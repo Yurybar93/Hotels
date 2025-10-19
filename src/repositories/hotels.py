@@ -1,6 +1,5 @@
 from sqlalchemy import func, select
 
-from src.exceptions import HotelNotFoundException
 from src.repositories.mappers.mappers import HotelDataMapper
 from src.models.rooms import RoomsOrm
 from src.repositories.utils import room_ids_for_booking
