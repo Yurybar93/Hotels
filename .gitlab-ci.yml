@@ -16,15 +16,15 @@ build-job:
   artifacts:
     paths: [.env, .env-test]
 
-Lint and Format:
+Lint:
   stage: lint_format
   script:
-     - ruff check
+     - docker run --rm --network my_network booking-api-image ruff check
 
 Format:
   stage: lint_format
   script:
-     - ruff format
+     - docker run --rm --network my_network booking-api-image ruff format
 
 Migrations:
   stage: migrations
