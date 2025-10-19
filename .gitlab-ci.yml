@@ -1,6 +1,9 @@
 
 stages:        
   - build
+  - lint_format
+  - migrations
+  - tests
   - deploy
 
 build-job:      
@@ -13,6 +16,25 @@ build-job:
   artifacts:
     paths: [.env, .env-test]
 
+Lint and Format:
+  stage: lint_format
+  script:
+     - ruff check
+
+Format:
+  stage: lint_format
+  script:
+     - ruff format
+
+Migrations:
+  stage: migrations
+  script: 
+      - docker run --rm --network my_network booking-api-image alembic upgrade head
+
+Tests:
+  stage: tests
+  script:
+      - docker run --rm --network my_network booking-api-image pytest -s -v
 deploy-job:    
   stage: deploy 
   script:
