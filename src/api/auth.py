@@ -52,7 +52,7 @@ async def register_user(
     return {"status": "OK"}
 
 
-@router.get("/me", summary="Get current user info👨‍💻")
+@router.get("/me")
 async def get_me(user_id: UserIdDep, db: DBDep):
     return await AuthService(db).get_user(user_id)
 
