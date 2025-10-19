@@ -13,13 +13,13 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-from src.init import redis_connector  #noqa: E402
-from src.api.hotels import router as hotels_router  #noqa: E402
-from src.api.auth import router as auth_router  #noqa: E402
-from src.api.rooms import router as rooms_router  #noqa: E402
-from src.api.bookings import router as bookings_router  #noqa: E402
-from src.api.facilities import router as facilities_router  #noqa: E402
-from src.api.image import router as image_router  #noqa: E402
+from src.init import redis_connector  # noqa: E402
+from src.api.hotels import router as hotels_router  # noqa: E402
+from src.api.auth import router as auth_router  # noqa: E402
+from src.api.rooms import router as rooms_router  # noqa: E402
+from src.api.bookings import router as bookings_router  # noqa: E402
+from src.api.facilities import router as facilities_router  # noqa: E402
+from src.api.image import router as image_router  # noqa: E402
 
 
 @asynccontextmanager
