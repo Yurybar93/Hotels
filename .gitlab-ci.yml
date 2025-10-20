@@ -13,8 +13,6 @@ build-job:
     - cp ${TEST_ENV} .env-test
   script:
     - docker build -t booking-api-image .
-  artifacts:
-    paths: [.env, .env-test]
 
 Lint:
   stage: lint_format
