@@ -217,7 +217,7 @@ docker run --name booking_nginx
 **Iurii Barynin**  
 📧 [yury.barynin@gmail.com](mailto:yury.barynin@gmail.com)  
 🌐 GitHub: [Yurybar93](https://github.com/Yurybar93)  
-💼 LinkedIn: [Iuri Barynin](www.linkedin.com/in/iuriibarynin)
+💼 LinkedIn: [Iurii Barynin](https://www.linkedin.com/in/iuriibarynin/)
 
 ---
 
