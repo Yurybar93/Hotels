@@ -1,0 +1,20 @@
+* [33m2cbe6f4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31mgitlab/main[m[33m, [m[1;31mgitlab/HEAD[m[33m)[m formated
+* [33mbdcf55f[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m add service for all
+* [33mb1de38c[m add service for rooms
+* [33mc9f1ee5[m add services for hotels
+* [33mff6c1c2[m add exception
+* [33ma6d4028[m ruff format
+* [33m1e3b7f5[m add ruff
+* [33m95cf84f[m modified test_auth
+* [33m6b023d5[m add test auth
+* [33m28ed668[m add test_add_and_get_bookings
+* [33m219bf8b[m add add_booking
+* [33mcb6c0d6[m add login test
+* [33m9ffa1a1[m add test facilities
+* [33m15117a8[m add tests booking
+* [33m7faeb34[m add hotals and rooms
+* [33m69c1f5d[m add first tests
+* [33mf79e611[m add task booking today
+* [33m9cde39c[m add image
+* [33m0b8bb70[m add redis connector
+* [33m1976a08[m stop tracking venv
