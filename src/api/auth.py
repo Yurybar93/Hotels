@@ -15,7 +15,7 @@ from schemas.users import UserLogin, UserRequestAdd
 router = APIRouter(prefix="/auth", tags=["Authorization and Authentication"])
 
 
-@router.post("/login")
+@router.post("/login", summary="Hallo Team")
 async def login_user(data: UserLogin, response: Response, db: DBDep):
     try:
         access_token = await AuthService(db).login_user(data)
